@@ -1,25 +1,30 @@
 package com.lksnext.parkingbercibengoa.domain;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class Reserva {
 
     private String id;
     private Usuario usuario;
     private Vehiculo vehiculo;
-    private LocalDate fecha;
-    private long horaInicio;
-    private long horaFin;
+    private LocalDateTime fechaInicio;
+    private Duration duracion;
     private Plaza plaza;
 
-    public Reserva(String id, Usuario usuario, Vehiculo vehiculo, LocalDate fecha, long horaInicio, long horaFin, Plaza plaza) {
+    public Reserva(String id, Usuario usuario, Vehiculo vehiculo, LocalDateTime fechaInicio, Duration duracion, Plaza plaza) {
         this.id = id;
         this.usuario = usuario;
         this.vehiculo = vehiculo;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
+        this.fechaInicio = fechaInicio;
+        this.duracion = duracion;
         this.plaza = plaza;
     }
+
+
+
 
     //Getters y Setters
     public String getId() {
@@ -34,21 +39,15 @@ public class Reserva {
     }
     public Vehiculo getVehiculo(){return vehiculo;}
     public void setVehiculo(Vehiculo vehiculo){this.vehiculo=vehiculo;}
-    public LocalDate getFecha() {
-        return fecha;
+    public LocalDateTime getFechaInicio() {
+        return fechaInicio;
     }
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
+    public void setFechaInicio(LocalDateTime fechaInicio) {
+        this.fechaInicio = fechaInicio;
     }
-    public long getHoraInicio() {return horaInicio;}
-    public void setHoraInicio(long horaInicio) {
-        this.horaInicio = horaInicio;
-    }
-    public long getHoraFin() {
-        return horaFin;
-    }
-    public void setHoraFin(long horaFin) {
-        this.horaFin = horaFin;
-    }
+    public Duration getDuracion(){return duracion;}
+    public void setDuracion(Duration duracion){this.duracion=duracion;}
+    public Plaza getPlaza(){return plaza;}
+    public void setPlaza(Plaza plaza){this.plaza=plaza;}
 
 }
