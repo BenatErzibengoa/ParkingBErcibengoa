@@ -2,24 +2,26 @@ package com.lksnext.parkingbercibengoa.domain;
 
 public class Plaza {
 
-    long id;
-    String tipo;
+    private long id;
+    private TipoVehiculo tipoVehiculo;
 
     public Plaza() {
 
     }
 
-    public Plaza(long id, String tipo) {
+    public Plaza(long id, TipoVehiculo tipo) {
         this.id = id;
-        this.tipo = tipo;
+        this.tipoVehiculo = tipo;
     }
 
-    public String getTipo() {
-        return tipo;
+
+    //Getters y Setters
+    public TipoVehiculo getTipo() {
+        return tipoVehiculo;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTipo(TipoVehiculo tipo) {
+        this.tipoVehiculo = tipo;
     }
 
     public long getId() {
