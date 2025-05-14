@@ -21,39 +21,31 @@ public class Usuario {
         this.fechaDeNacimiento = fechaDeNacimiento;
     }
 
-    public void Reservar(Vehiculo vehiculo, Plaza plaza, LocalDateTime fechaInicio, Duration duracion){
-        HorarioPlaza horarioPlaza = null; //TODO: Obtener horario desde la base de datos
-        LocalDateTime fechaFin = fechaInicio.plus(duracion);
-        boolean reserva1, reserva2 = true;
-        //Si la reserva no pasa al siguinete día reservar normal, si no, dividimos la reserva entre los dos días
-        if(fechaInicio.toLocalDate().equals(fechaFin.toLocalDate())){
-            reserva1 = horarioPlaza.reservar(fechaInicio, duracion);
-        }else{
-            LocalDateTime fechaFinDia = fechaInicio.toLocalDate().plusDays(1).atTime(LocalTime.of(0,0));
-            reserva1 = horarioPlaza.reservar(fechaInicio, Duration.between(fechaInicio, fechaFinDia));
-            HorarioPlaza horarioPlazaDiaSiguiente = null; //TODO: Obtener horario desde la base de datos
-            reserva2 = horarioPlazaDiaSiguiente.reservar(fechaFinDia, Duration.between(fechaFinDia, fechaFin));
-        }
-        //TODO: implementar id
-        if(reserva1 && reserva2) {
-            Reserva reserva = new Reserva("id", this, vehiculo, fechaInicio, duracion, plaza);
-        }else {
-            System.out.println("error");
+    public void reservar(Vehiculo vehiculo, Plaza plaza, LocalDateTime fechaInicio, Duration duracion) {
+        HorarioPlaza horarioPlaza = new HorarioPlaza(plaza, fechaInicio.toLocalDate());  //TODO: Esto se debe obtener mediante la base de datos
+        // Realizar la reserva, delegando en HorarioPlaza
+        boolean reserva = horarioPlaza.reservar(fechaInicio, duracion);
+        if(reserva) {
+            Reserva reservaCreada = new Reserva("id", this, vehiculo, fechaInicio, duracion, plaza);
+            // Añadir reserva a la lista
+            reservas.add(reservaCreada);
+        } else {
+            System.out.println("Error: No se pudo realizar la reserva");
         }
     }
 
-//Getters y Setters
-public String getNombre() {return nombre;}
-public void setNombre(String nombre) {this.nombre = nombre;}
-public String getEmail() {return email;}
-public void setEmail(String email) {this.email = email;}
-public String getContraseña() {return contrasena;}
-public void setContraseña(String contraseña) {this.contrasena = contrasena;}
-public LocalDate getFechaDeNacimiento() {return fechaDeNacimiento;}
-public void setFechaDeNacimiento(LocalDate fechaDeNacimiento) {this.fechaDeNacimiento = fechaDeNacimiento;}
-public List<Vehiculo> getVehiculos() { return vehiculos;}
-public void setVehiculos(List<Vehiculo> vehiculos) {this.vehiculos = vehiculos;}
-public List<Reserva> getReservas() {return reservas;}
-public void setReservas(List<Reserva> reservas) {this.reservas = reservas;}
+    //Getters y Setters
+    public String getNombre() {return nombre;}
+    public void setNombre(String nombre) {this.nombre = nombre;}
+    public String getEmail() {return email;}
+    public void setEmail(String email) {this.email = email;}
+    public String getContraseña() {return contrasena;}
+    public void setContraseña(String contraseña) {this.contrasena = contrasena;}
+    public LocalDate getFechaDeNacimiento() {return fechaDeNacimiento;}
+    public void setFechaDeNacimiento(LocalDate fechaDeNacimiento) {this.fechaDeNacimiento = fechaDeNacimiento;}
+    public List<Vehiculo> getVehiculos() { return vehiculos;}
+    public void setVehiculos(List<Vehiculo> vehiculos) {this.vehiculos = vehiculos;}
+    public List<Reserva> getReservas() {return reservas;}
+    public void setReservas(List<Reserva> reservas) {this.reservas = reservas;}
 
 }

@@ -17,8 +17,23 @@ public class HorarioPlaza {
         this.dia = dia;
         horario = new BitSet(1440);
     }
+    public boolean reservar(LocalDateTime fechaInicio, Duration duracion) {
+        LocalDateTime fechaFin = fechaInicio.plus(duracion);
+        if (fechaInicio.toLocalDate().equals(fechaFin.toLocalDate())) {
+            return realizarReserva(fechaInicio, duracion);
+        } else {
+            HorarioPlaza horarioPlazaSiguienteDia = null; //TODO: Esto se debe obtener mediante la base de datos
+            // Dividir la reserva en dos días
+            Duration duracionDia1 = Duration.between(fechaInicio, fechaInicio.toLocalDate().plusDays(1).atStartOfDay());
+            Duration duracionDia2 = Duration.between(fechaInicio.toLocalDate().plusDays(1).atStartOfDay(), fechaFin);
 
-    public boolean reservar(LocalDateTime fechaInicio, Duration duracion){
+            boolean reservaDia1 = realizarReserva(fechaInicio, duracionDia1);
+            boolean reservaDia2 = horarioPlazaSiguienteDia.realizarReserva(fechaInicio.toLocalDate().plusDays(1).atStartOfDay(), duracionDia2);
+
+            return reservaDia1 && reservaDia2;
+        }
+    }
+    public boolean realizarReserva(LocalDateTime fechaInicio, Duration duracion){
         if(estaLibreDurante(fechaInicio, duracion)){
             int indiceInicio = fechaInicio.getHour() * 60 + fechaInicio.getMinute();
             int indiceFinal = indiceInicio + (int)duracion.toMinutes();
