@@ -1,70 +1,54 @@
 package com.lksnext.parkingbercibengoa.domain;
 
+import java.time.LocalDate;
+
 public class Reserva {
 
-    String fecha, usuario, id;
+    private String id;
+    private Usuario usuario;
+    private Vehiculo vehiculo;
+    private LocalDate fecha;
+    private long horaInicio;
+    private long horaFin;
+    private Plaza plaza;
 
-    Plaza plaza;
-
-    Hora hora;
-
-    public Reserva() {
-
-    }
-
-    public Reserva(String fecha, String usuario, String id, Plaza plaza, Hora hora) {
-        this.fecha = fecha;
-        this.usuario = usuario;
-        this.plaza = plaza;
-        this.hora = hora;
+    public Reserva(String id, Usuario usuario, Vehiculo vehiculo, LocalDate fecha, long horaInicio, long horaFin, Plaza plaza) {
         this.id = id;
-    }
-
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
-
-    public String getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(String usuario) {
         this.usuario = usuario;
-    }
-
-    public Plaza getPlazaId() {
-        return plaza;
-    }
-
-    public void setPlazaId(Plaza plaza) {
+        this.vehiculo = vehiculo;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
         this.plaza = plaza;
     }
 
-    public Hora getHoraInicio() {
-        return hora;
-    }
-
-    public void setHoraInicio(Hora hora) {
-        this.hora = hora;
-    }
-
-    public Hora getHoraFin() {
-        return hora;
-    }
-
-    public void setHoraFin(Hora hora) {
-        this.hora = hora;
-    }
-
+    //Getters y Setters
     public String getId() {
         return id;
     }
-
     public void setId(String id) {
         this.id = id;
     }
+    public Usuario getUsuario() {return usuario;}
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+    public Vehiculo getVehiculo(){return vehiculo;}
+    public void setVehiculo(Vehiculo vehiculo){this.vehiculo=vehiculo;}
+    public LocalDate getFecha() {
+        return fecha;
+    }
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+    public long getHoraInicio() {return horaInicio;}
+    public void setHoraInicio(long horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+    public long getHoraFin() {
+        return horaFin;
+    }
+    public void setHoraFin(long horaFin) {
+        this.horaFin = horaFin;
+    }
+
 }
