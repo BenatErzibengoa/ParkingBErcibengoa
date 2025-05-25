@@ -48,6 +48,7 @@
         app:layout_constraintStart_toEndOf="@+id/tvAppNameIn"
         app:layout_constraintTop_toTopOf="@+id/tvAppNameIn" />
 
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilEmail"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -60,11 +61,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvAppNameIn"
         app:startIconDrawable="@drawable/ic_person"
-        app:hintTextColor="@color/orangeDark"
-        app:boxStrokeColor="@color/orange"
+        app:hintTextColor="@color/black"
+        app:boxStrokeColor="#5D9CEC"
         app:boxBackgroundColor="@android:color/white"
-        android:textColorHint="@color/orangeDark"
-        >
+        android:textColorHint="@color/black">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailText"
@@ -72,10 +72,11 @@
             android:layout_height="wrap_content"
             android:hint="tu@email.com"
             android:inputType="textEmailAddress"
-            android:textColor="@android:color/black"
-            android:textColorHint="@color/orangeDark" />
+            android:textColor="@color/black"
+            android:textColorHint="#99000000" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Password -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilPassword"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -89,11 +90,10 @@
         app:layout_constraintTop_toBottomOf="@+id/tilEmail"
         app:passwordToggleEnabled="true"
         app:startIconDrawable="@drawable/ic_lock"
-        app:hintTextColor="@color/orangeDark"
-        app:boxStrokeColor="@color/orange"
+        app:hintTextColor="@color/black"
+        app:boxStrokeColor="#5D9CEC"
         app:boxBackgroundColor="@android:color/white"
-        android:textColorHint="@color/orangeDark"
-        >
+        android:textColorHint="@color/black">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/passwordText"
@@ -101,8 +101,8 @@
             android:layout_height="wrap_content"
             android:hint="Contraseña"
             android:inputType="textPassword"
-            android:textColor="@android:color/black"
-            android:textColorHint="@color/orangeDark" />
+            android:textColor="@color/black"
+            android:textColorHint="#33000000" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
