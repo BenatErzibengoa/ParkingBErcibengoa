@@ -1,5 +1,7 @@
 package com.lksnext.parkingbercibengoa.view.activity;
 
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -47,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
                 } else {
-                    //Login incorrecto
+                    binding.loginErrorText.setVisibility(VISIBLE);
                 }
             }
         });

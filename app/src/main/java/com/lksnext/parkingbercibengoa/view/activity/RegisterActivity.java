@@ -1,6 +1,12 @@
 package com.lksnext.parkingbercibengoa.view.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,7 +26,46 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
         //Asignamos el viewModel de register
         registerViewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+
+        //Acciones a realizar cuando el usuario clica el boton de crear cuenta
+        binding.createAccountButton.setOnClickListener(v -> {
+            String fullNameText = binding.fullNameText.getText().toString().trim();
+            String email = binding.emailText.getText().toString().trim();
+            String password = binding.passwordText.getText().toString().trim();
+            String confirmPassword = binding.confirmPasswordText.getText().toString().trim();
+            if(fullNameText.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
+                showError("Todos los campos son obligatorios");
+            }else if(password.length() < 6){
+                showError("La contraseña debe contener al menos 6 caracteres");
+            }else if(!password.equals(confirmPassword)){
+                showError("Las contraseñas no coinciden");
+            } else{
+                binding.registerErrorText.setVisibility(GONE);
+                registerViewModel.registerUser(email, password);
+            }
+        });
+
+        //Observamos la variable registered para navegar cuando el registro sea exitoso
+        registerViewModel.isRegistered().observe(this, registered -> {
+            if (registered != null) {
+                if (registered) {
+                    //Registro correcto - navegamos
+                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                } else {
+                    //Registro incorrecto
+                    binding.registerErrorText.setText("Existe una cuenta asociada a este email");
+                    binding.registerErrorText.setVisibility(VISIBLE);
+                }
+            }
+        });
+    }
+
+    private void showError(String message){
+        binding.registerErrorText.setText(message);
+        binding.registerErrorText.setVisibility(VISIBLE);
     }
 }

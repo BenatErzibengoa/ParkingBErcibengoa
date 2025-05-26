@@ -34,4 +34,17 @@ public class DataRepository {
                 });
     }
 
+    //Petición del registro.
+    public void register(String email, String pass, Callback callback){
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        callback.onSuccess();
+                    } else {
+                        Log.d(":::", "Register Error: " + task.getException().getMessage());
+                        callback.onFailure();
+                    }
+                });
+    }
+
 }
