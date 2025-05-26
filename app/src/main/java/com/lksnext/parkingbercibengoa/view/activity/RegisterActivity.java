@@ -30,7 +30,12 @@ public class RegisterActivity extends AppCompatActivity {
         //Asignamos el viewModel de register
         registerViewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
-        //Acciones a realizar cuando el usuario clica el boton de crear cuenta
+        //Flecha de volver
+        binding.backButton.setOnClickListener(v -> {
+            finish(); // Cierra la actividad actual y vuelve a la anterior
+        });
+
+        //Boton crear cuenta
         binding.createAccountButton.setOnClickListener(v -> {
             String fullNameText = binding.fullNameText.getText().toString().trim();
             String email = binding.emailText.getText().toString().trim();
@@ -52,11 +57,8 @@ public class RegisterActivity extends AppCompatActivity {
         registerViewModel.isRegistered().observe(this, registered -> {
             if (registered != null) {
                 if (registered) {
-                    //Registro correcto - navegamos
-                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                 } else {
-                    //Registro incorrecto
                     binding.registerErrorText.setText("Existe una cuenta asociada a este email");
                     binding.registerErrorText.setVisibility(VISIBLE);
                 }
