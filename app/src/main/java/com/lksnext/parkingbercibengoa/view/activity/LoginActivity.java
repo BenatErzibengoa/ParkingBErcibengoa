@@ -1,6 +1,9 @@
 package com.lksnext.parkingbercibengoa.view.activity;
 
+import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+
+import static com.lksnext.parkingbercibengoa.configuration.Utils.showError;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +11,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.ActivityLoginBinding;
 import com.lksnext.parkingbercibengoa.viewmodel.LoginViewModel;
 
@@ -19,29 +23,37 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //Asignamos la vista/interfaz login (layout)
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        //Asignamos el viewModel de login
         loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        //Acciones a realizar cuando el usuario clica el boton de login
+        // Intentar logearse
         binding.loginButton.setOnClickListener(v -> {
             String email = binding.emailText.getText().toString();
             String password = binding.passwordText.getText().toString();
-            loginViewModel.loginUser(email, password);
+            if(email.isEmpty() || password.isEmpty()){
+                showError("Todos los campos son obligatorios", binding.loginErrorText);
+            }else if(!Utils.validateEmail(email)){
+                showError("Introduzca un email válido", binding.loginErrorText);
+            }else if(password.length() < 6){
+                showError("La contraseña debe contener al menos 6 caracteres", binding.loginErrorText);
+            } else{
+                binding.loginErrorText.setVisibility(GONE);
+                loginViewModel.loginUser(email, password);
+            }
         });
 
-        //Acciones a realizar cuando el usuario clica el boton de crear cuenta (se cambia de pantalla)
+        // Login --> Register
         binding.createAccount.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
 
-        //Observamos la variable logged, la cual nos informara cuando el usuario intente hacer login y se
-        //cambia de pantalla en caso de login correcto
+        //¿Olvidaste tu contraseña?
+        binding.tvForgotPassword.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, PasswordActivity.class));
+        });
+
+        //logged
         loginViewModel.isLogged().observe(this, logged -> {
             if (logged != null) {
                 if (logged) {
@@ -49,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
                 } else {
-                    binding.loginErrorText.setVisibility(VISIBLE);
+                    Utils.showError("Credenciales incorrectos",  binding.loginErrorText);
                 }
             }
         });

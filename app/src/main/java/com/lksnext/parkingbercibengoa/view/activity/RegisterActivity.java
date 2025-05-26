@@ -3,6 +3,8 @@ package com.lksnext.parkingbercibengoa.view.activity;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import static com.lksnext.parkingbercibengoa.configuration.Utils.showError;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.ActivityRegisterBinding;
 import com.lksnext.parkingbercibengoa.viewmodel.RegisterViewModel;
 
@@ -42,11 +45,13 @@ public class RegisterActivity extends AppCompatActivity {
             String password = binding.passwordText.getText().toString().trim();
             String confirmPassword = binding.confirmPasswordText.getText().toString().trim();
             if(fullNameText.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
-                showError("Todos los campos son obligatorios");
+                showError("Todos los campos son obligatorios", binding.registerErrorText);
+            }else if(!Utils.validateEmail(email)){
+                showError("Introduzca un email válido", binding.registerErrorText);
             }else if(password.length() < 6){
-                showError("La contraseña debe contener al menos 6 caracteres");
+                showError("La contraseña debe contener al menos 6 caracteres", binding.registerErrorText);
             }else if(!password.equals(confirmPassword)){
-                showError("Las contraseñas no coinciden");
+                showError("Las contraseñas no coinciden", binding.registerErrorText);
             } else{
                 binding.registerErrorText.setVisibility(GONE);
                 registerViewModel.registerUser(email, password);
@@ -59,15 +64,9 @@ public class RegisterActivity extends AppCompatActivity {
                 if (registered) {
                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                 } else {
-                    binding.registerErrorText.setText("Existe una cuenta asociada a este email");
-                    binding.registerErrorText.setVisibility(VISIBLE);
+                    showError("Existe una cuenta asociada a este email", binding.registerErrorText);
                 }
             }
         });
-    }
-
-    private void showError(String message){
-        binding.registerErrorText.setText(message);
-        binding.registerErrorText.setVisibility(VISIBLE);
     }
 }

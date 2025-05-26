@@ -21,7 +21,6 @@ public class DataRepository {
         return instance;
     }
 
-    //Petición del login.
     public void login(String email, String pass, Callback callback){
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
@@ -34,7 +33,6 @@ public class DataRepository {
                 });
     }
 
-    //Petición del registro.
     public void register(String email, String pass, Callback callback){
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
@@ -42,6 +40,19 @@ public class DataRepository {
                         callback.onSuccess();
                     } else {
                         Log.d(":::", "Register Error: " + task.getException().getMessage());
+                        callback.onFailure();
+                    }
+                });
+    }
+
+    public void changePassword(String email, Callback callback){
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        callback.onSuccess();
+                        Log.d("Firebase", "Correo de restablecimiento enviado");
+                    } else {
+                        Log.e("Firebase", "Error al enviar el correo", task.getException());
                         callback.onFailure();
                     }
                 });
