@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <layer-list>
+            <!-- Barra azul arriba del ítem -->
+            <item android:top="0dp" android:height="4dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/blueMain" />
+                </shape>
+            </item>
+            <!-- Relleno debajo de la barra -->
+            <item android:top="4dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <color android:color="@android:color/transparent" />
+    </item>
+</selector>
