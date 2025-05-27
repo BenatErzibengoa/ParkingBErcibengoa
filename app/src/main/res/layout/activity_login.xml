@@ -64,7 +64,7 @@
         app:hintTextColor="@color/black"
         app:boxStrokeColor="#5D9CEC"
         app:boxBackgroundColor="@android:color/white"
-        android:textColorHint="@color/black">
+        android:textColorHint="@color/gray">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailText"
@@ -73,7 +73,7 @@
             android:hint="tu@email.com"
             android:inputType="textEmailAddress"
             android:textColor="@color/black"
-            android:textColorHint="#99000000" />
+            android:textColorHint="@color/gray" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Password -->
@@ -91,9 +91,9 @@
         app:passwordToggleEnabled="true"
         app:startIconDrawable="@drawable/ic_lock"
         app:hintTextColor="@color/black"
-        app:boxStrokeColor="#5D9CEC"
+        app:boxStrokeColor="@color/blueMain"
         app:boxBackgroundColor="@android:color/white"
-        android:textColorHint="@color/black">
+        android:textColorHint="@color/gray">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/passwordText"
@@ -102,7 +102,7 @@
             android:hint="Contraseña"
             android:inputType="textPassword"
             android:textColor="@color/black"
-            android:textColorHint="#33000000" />
+            android:textColorHint="@color/gray" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -116,6 +116,19 @@
         android:textColor="#5D9CEC"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
+
+    <TextView
+        android:id="@+id/loginErrorText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Credenciales incorrectos"
+        android:textColor="@android:color/holo_red_dark"
+        android:visibility="gone"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@+id/tvForgotPassword"
+        app:layout_constraintEnd_toEndOf="@+id/tvForgotPassword"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"/>
 
     <Button
         android:id="@+id/loginButton"
@@ -156,7 +169,7 @@
         android:padding="16dp"
         android:text="Regístrate"
         android:textAllCaps="false"
-        android:textColor="#5D9CEC"
+        android:textColor="@color/blueMain"
         android:textSize="16sp"
         app:cornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
