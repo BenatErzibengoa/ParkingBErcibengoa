@@ -3,6 +3,8 @@ package com.lksnext.parkingbercibengoa.data;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.lksnext.parkingbercibengoa.domain.Callback;
 
 public class DataRepository {
@@ -33,13 +35,27 @@ public class DataRepository {
                 });
     }
 
-    public void register(String email, String pass, Callback callback){
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, pass)
+    public void register(String fullName, String email, String pass, Callback callback){
+        FirebaseAuth.getInstance()
+                .createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        callback.onSuccess();
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                .setDisplayName(fullName) // Aquí pones el nombre
+                                .build();
+
+                        user.updateProfile(profileUpdates)
+                                .addOnCompleteListener(profileUpdateTask -> {
+                                    if (profileUpdateTask.isSuccessful()) {
+                                        Log.d(this.getClass().getSimpleName().toString(), "Nombre guardado correctamente.");
+                                    } else {
+                                        Log.e(this.getClass().getSimpleName().toString(), "Error al guardar el nombre.", profileUpdateTask.getException());
+                                    }
+                                });
                     } else {
-                        Log.d(":::", "Register Error: " + task.getException().getMessage());
+                        Log.e(this.getClass().getSimpleName().toString(), "Error al registrar usuario.", task.getException());
                         callback.onFailure();
                     }
                 });
