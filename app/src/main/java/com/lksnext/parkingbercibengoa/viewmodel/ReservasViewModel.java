@@ -32,7 +32,9 @@ public class ReservasViewModel extends ViewModel {
         Vehiculo vehiculo = new Vehiculo("1234ABC", TipoVehiculo.COCHE);
         Reserva reserva1 = new Reserva("1", null, vehiculo, LocalDateTime.now(), Duration.of(1, ChronoUnit.HOURS), new Plaza(13, TipoVehiculo.COCHE));
         Reserva reserva2 = new Reserva("2", null, vehiculo, LocalDateTime.now().plusDays(1), Duration.of(1, ChronoUnit.HOURS), new Plaza(14, TipoVehiculo.ELECTRICO));
-        reservas.setValue(List.of(reserva1, reserva2));
+        Reserva reserva3 = new Reserva("3", null, vehiculo, LocalDateTime.now().plusDays(1).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza(1, TipoVehiculo.ELECTRICO));
+
+        reservas.setValue(List.of(reserva1, reserva2, reserva3));
 
 
 
