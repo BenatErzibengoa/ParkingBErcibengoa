@@ -11,4 +11,10 @@
         android:label="@string/fragment_main"
         tools:layout="@layout/fragment_main">
     </fragment>
+    <fragment
+        android:id="@+id/reservasFragmentRoot"
+        android:name="com.lksnext.parkingbercibengoa.view.fragment.ReservasFragment"
+        android:label="@string/fragment_main"
+        tools:layout="@layout/fragment_main">
+    </fragment>
 </navigation>

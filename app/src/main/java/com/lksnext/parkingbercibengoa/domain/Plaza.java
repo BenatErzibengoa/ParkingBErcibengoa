@@ -2,14 +2,14 @@ package com.lksnext.parkingbercibengoa.domain;
 
 public class Plaza {
 
-    private long id;
+    private int id;
     private TipoVehiculo tipoVehiculo;
 
     public Plaza() {
 
     }
 
-    public Plaza(long id, TipoVehiculo tipo) {
+    public Plaza(int id, TipoVehiculo tipo) {
         this.id = id;
         this.tipoVehiculo = tipo;
     }
@@ -24,11 +24,17 @@ public class Plaza {
         this.tipoVehiculo = tipo;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(getId());
+    }
+
 }

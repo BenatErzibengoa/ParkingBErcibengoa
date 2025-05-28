@@ -40,11 +40,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         //Boton crear cuenta
         binding.createAccountButton.setOnClickListener(v -> {
-            String fullNameText = binding.fullNameText.getText().toString().trim();
+            String fullName = binding.fullNameText.getText().toString().trim();
             String email = binding.emailText.getText().toString().trim();
             String password = binding.passwordText.getText().toString().trim();
             String confirmPassword = binding.confirmPasswordText.getText().toString().trim();
-            if(fullNameText.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
+            if(fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
                 showError("Todos los campos son obligatorios", binding.registerErrorText);
             }else if(!Utils.validateEmail(email)){
                 showError("Introduzca un email válido", binding.registerErrorText);
@@ -54,7 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
                 showError("Las contraseñas no coinciden", binding.registerErrorText);
             } else{
                 binding.registerErrorText.setVisibility(GONE);
-                registerViewModel.registerUser(email, password);
+                registerViewModel.registerUser(fullName, email, password);
             }
         });
 
