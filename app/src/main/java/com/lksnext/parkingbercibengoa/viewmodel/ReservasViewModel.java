@@ -29,10 +29,13 @@ public class ReservasViewModel extends ViewModel {
         //List<Reserva> dummy = ...; // Tu lógica aquí
         //reservas.setValue(dummy);
 
-        Vehiculo vehiculo = new Vehiculo("1234ABC", TipoVehiculo.COCHE);
-        Reserva reserva1 = new Reserva("1", null, vehiculo, LocalDateTime.now(), Duration.of(1, ChronoUnit.HOURS), new Plaza(13, TipoVehiculo.COCHE));
-        Reserva reserva2 = new Reserva("2", null, vehiculo, LocalDateTime.now().plusDays(1), Duration.of(1, ChronoUnit.HOURS), new Plaza(14, TipoVehiculo.ELECTRICO));
-        Reserva reserva3 = new Reserva("3", null, vehiculo, LocalDateTime.now().plusDays(1).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza(1, TipoVehiculo.ELECTRICO));
+        Vehiculo vehiculo1 = new Vehiculo("9359MPK", TipoVehiculo.COCHE);
+        Vehiculo vehiculo2 = new Vehiculo("5340CCB", TipoVehiculo.ELECTRICO);
+        Vehiculo vehiculo3 = new Vehiculo("3420ATB", TipoVehiculo.ELECTRICO);
+
+        Reserva reserva1 = new Reserva("1", null, vehiculo1, LocalDateTime.now(), Duration.of(1, ChronoUnit.HOURS), new Plaza(13, TipoVehiculo.COCHE));
+        Reserva reserva2 = new Reserva("2", null, vehiculo2, LocalDateTime.now().plusDays(1), Duration.of(1, ChronoUnit.HOURS), new Plaza(14, TipoVehiculo.ELECTRICO));
+        Reserva reserva3 = new Reserva("3", null, vehiculo3, LocalDateTime.now().plusDays(1).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza(1, TipoVehiculo.ELECTRICO));
 
         reservas.setValue(List.of(reserva1, reserva2, reserva3));
 
