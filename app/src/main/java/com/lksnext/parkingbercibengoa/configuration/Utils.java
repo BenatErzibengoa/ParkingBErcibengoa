@@ -4,6 +4,7 @@ import static android.view.View.VISIBLE;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
@@ -65,4 +66,35 @@ public class Utils {
         }
         return nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
     }
+
+    public static String getMensajeError(String errorCode) {
+        Log.d("Utils", "Error code: " + errorCode);
+        if (errorCode == null) {
+            return "Error desconocido";
+        }
+        switch (errorCode) {
+            case "ERROR_INVALID_EMAIL":
+                return "Correo electrónico inválido";
+            case "ERROR_WRONG_PASSWORD":
+                return "Contraseña incorrecta";
+            case "ERROR_USER_NOT_FOUND":
+                return "Usuario no encontrado";
+            case "ERROR_USER_DISABLED":
+                return "El usuario ha sido deshabilitado";
+            case "ERROR_EMAIL_ALREADY_IN_USE":
+                return "Ya existe un usuario con ese correo";
+            case "ERROR_OPERATION_NOT_ALLOWED":
+                return "Operación no permitida";
+            case "ERROR_TOO_MANY_REQUESTS":
+                return "Demasiados intentos, por favor intente más tarde";
+            case "ERROR_WEAK_PASSWORD":
+                return "La contraseña es demasiado débil";
+            case "no_connection":   // AÑADIDO este caso
+                return "No hay conexión a Internet";
+            default:
+                return "Error desconocido";
+        }
+    }
+
+
 }

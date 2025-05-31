@@ -62,10 +62,18 @@ public class RegisterActivity extends AppCompatActivity {
         registerViewModel.isRegistered().observe(this, registered -> {
             if (registered != null) {
                 if (registered) {
+                    Log.d("RegisterActivity", "Registro correcto");
                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                 } else {
-                    showError("Existe una cuenta asociada a este email", binding.registerErrorText);
+                    Log.d("RegisterActivity", "Registro incorrecto");
                 }
+            }
+        });
+
+        registerViewModel.getError().observe(this, errorCode -> {
+            if (errorCode != null && !errorCode.isEmpty()) {
+                String mensaje = Utils.getMensajeError(errorCode);
+                Utils.showError(mensaje, binding.registerErrorText);
             }
         });
     }

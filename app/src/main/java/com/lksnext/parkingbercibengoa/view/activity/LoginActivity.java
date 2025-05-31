@@ -7,6 +7,7 @@ import static com.lksnext.parkingbercibengoa.configuration.Utils.showError;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -57,12 +58,19 @@ public class LoginActivity extends AppCompatActivity {
         loginViewModel.isLogged().observe(this, logged -> {
             if (logged != null) {
                 if (logged) {
-                    //Login Correcto
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
+                    Log.d("LoginActivity", "Login correcto");
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 } else {
-                    Utils.showError("Credenciales incorrectos",  binding.loginErrorText);
+                    //La logica para mostrar el error se hace en otro listener
+                    Log.d("LoginActivity", "Login incorrecto");
                 }
+            }
+        });
+
+        loginViewModel.getError().observe(this, errorCode -> {
+            if (errorCode != null && !errorCode.isEmpty()) {
+                String mensaje = Utils.getMensajeError(errorCode);
+                Utils.showError(mensaje, binding.loginErrorText);
             }
         });
     }

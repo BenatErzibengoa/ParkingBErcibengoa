@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.reservations) {
                 navController.navigate(R.id.reservasFragmentRoot);
-
             }
             return false;
         });

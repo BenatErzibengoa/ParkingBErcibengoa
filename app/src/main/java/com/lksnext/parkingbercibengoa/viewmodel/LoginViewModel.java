@@ -11,9 +11,14 @@ public class LoginViewModel extends ViewModel {
 
     // Aquí puedes declarar los LiveData y métodos necesarios para la vista de inicio de sesión
     MutableLiveData<Boolean> logged = new MutableLiveData<>(null);
+    MutableLiveData<String> error = new MutableLiveData<>(null);
 
     public LiveData<Boolean> isLogged(){
         return logged;
+    }
+
+    public LiveData<String> getError() {
+        return error;
     }
 
     public void loginUser(String email, String password) {
@@ -28,9 +33,10 @@ public class LoginViewModel extends ViewModel {
 
             //En caso de que el login sea incorrecto, que se hace
             @Override
-            public void onFailure() {
+            public void onFailure(String errorCode) {
                 //TODO
                 logged.setValue(Boolean.FALSE);
+                error.setValue(errorCode);
             }
         });
     }

@@ -11,9 +11,13 @@ public class RegisterViewModel extends ViewModel {
     // Aquí puedes declarar los LiveData y métodos necesarios para la vista de registro
     // Por ejemplo, un LiveData para el email, contraseña y usuario
     MutableLiveData<Boolean> registered = new MutableLiveData<>(null);
+    MutableLiveData<String> error = new MutableLiveData<>(null);
 
     public LiveData<Boolean> isRegistered(){
         return registered;
+    }
+    public LiveData<String> getError() {
+        return error;
     }
 
     public void registerUser(String fullName, String email, String password) {
@@ -24,7 +28,8 @@ public class RegisterViewModel extends ViewModel {
             }
 
             @Override
-            public void onFailure() {
+            public void onFailure(String errorCode) {
+                error.setValue(errorCode);
                 registered.setValue(Boolean.FALSE);
             }
         });
