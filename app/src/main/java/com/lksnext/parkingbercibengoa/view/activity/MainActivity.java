@@ -22,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         //Asignamos la vista/interfaz main (layout)
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -31,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment =
             (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.flFragment);
         navController = navHostFragment.getNavController();
+        navController.navigate(R.id.reservasFragmentRoot);
 
         //Asignamos los botones de navegacion que se encuentran en la vista (layout)
         bottomNavigationView = binding.bottomNavigationView;
@@ -40,10 +40,10 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.newres) {
-                navController.navigate(R.id.mainFragment);
+                navController.navigate(R.id.reservasFragmentRoot);
                 return true;
             } else if (itemId == R.id.reservations) {
-                navController.navigate(R.id.reservasFragmentRoot);
+                navController.navigate(R.id.mainFragment);
             }
             return false;
         });
