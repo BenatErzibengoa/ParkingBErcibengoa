@@ -1,7 +1,6 @@
 package com.lksnext.parkingbercibengoa.view.activity;
 
 import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
 
 import static com.lksnext.parkingbercibengoa.configuration.Utils.showError;
 
@@ -18,15 +17,12 @@ import com.lksnext.parkingbercibengoa.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private ActivityLoginBinding binding;
-    private LoginViewModel loginViewModel;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        ActivityLoginBinding binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+        LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
         // Intentar logearse
         binding.loginButton.setOnClickListener(v -> {

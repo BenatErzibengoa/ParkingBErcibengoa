@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel;
 import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
-import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 
 import java.time.Duration;
@@ -24,11 +23,6 @@ public class ReservasViewModel extends ViewModel {
     }
 
     public void cargarReservasDelUsuario() {
-        // Aquí llamas a tu base de datos o repositorio
-        // Simulamos datos de prueba:
-        //List<Reserva> dummy = ...; // Tu lógica aquí
-        //reservas.setValue(dummy);
-
         Vehiculo vehiculo1 = new Vehiculo("9359MPK", TipoVehiculo.COCHE);
         Vehiculo vehiculo2 = new Vehiculo("5340CCB", TipoVehiculo.ELECTRICO);
         Vehiculo vehiculo3 = new Vehiculo("3420ATB", TipoVehiculo.ELECTRICO);
