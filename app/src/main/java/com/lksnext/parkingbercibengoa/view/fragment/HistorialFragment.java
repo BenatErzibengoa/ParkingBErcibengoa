@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,43 +16,39 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
+import com.lksnext.parkingbercibengoa.databinding.FragmentHistorialBinding;
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
 import com.lksnext.parkingbercibengoa.databinding.ReservaItemBinding;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
+import com.lksnext.parkingbercibengoa.viewmodel.HistorialViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
-public class ReservasFragment extends Fragment {
+public class HistorialFragment extends Fragment {
 
-    private FragmentReservasBinding binding;
+    private FragmentHistorialBinding binding;
 
 
     @Nullable
     @Override
-    public android.view.View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                                           @Nullable Bundle savedInstanceState) {
-        binding = FragmentReservasBinding.inflate(inflater, container, false);
+        binding = FragmentHistorialBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ReservasViewModel viewModel = new ViewModelProvider(this).get(ReservasViewModel.class);
-
-        // boton nueva reserva
-        binding.btnNuevaReserva.setOnClickListener(v -> {
-            // TODO: Navegar a pantalla para crear nueva reserva
-        });
+        HistorialViewModel viewModel = new ViewModelProvider(this).get(HistorialViewModel.class);
 
         // Observar las reservas y añadirlas dinámicamente
         viewModel.getReservas().observe(getViewLifecycleOwner(), reservas -> {
@@ -63,8 +58,8 @@ public class ReservasFragment extends Fragment {
             // 1. Agrupar reservas por fecha de inicio
             Map<LocalDate, List<Reserva>> reservasPorFecha = reservas.stream()
                     .collect(Collectors.groupingBy(
-                            r -> r.getFechaInicio().toLocalDate(),
-                            TreeMap::new, // Ordenar por fecha ascendente
+                            (Reserva r) -> r.getFechaInicio().toLocalDate(),
+                            () -> new TreeMap<LocalDate, List<Reserva>>(Comparator.reverseOrder()),
                             Collectors.toList()
                     ));
 

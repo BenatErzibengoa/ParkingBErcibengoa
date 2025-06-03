@@ -30,20 +30,23 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment =
             (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.flFragment);
         navController = navHostFragment.getNavController();
-        navController.navigate(R.id.reservasFragmentRoot);
 
         //Asignamos los botones de navegacion que se encuentran en la vista (layout)
         bottomNavigationView = binding.bottomNavigationView;
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
+        //Empezar en pestaña reservas
+        navController.navigate(R.id.reservasFragment);
+
         //Dependendiendo que boton clique el usuario de la navegacion se hacen distintas cosas
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.newres) {
-                navController.navigate(R.id.reservasFragmentRoot);
+                navController.navigate(R.id.reservasFragment);
                 return true;
             } else if (itemId == R.id.reservations) {
-                navController.navigate(R.id.mainFragment);
+                navController.navigate(R.id.historialFragment);
+                return true;
             }
             return false;
         });

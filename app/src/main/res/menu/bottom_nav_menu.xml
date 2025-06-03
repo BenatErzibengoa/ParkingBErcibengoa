@@ -6,7 +6,4 @@
     <item
         android:id="@+id/reservations"
         android:title="Historial" />
-    <item
-        android:id="@+id/vehicles"
-        android:title="Mis vehículos" />
 </menu>

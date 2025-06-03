@@ -3,18 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/reservasFragment">
 
     <fragment
-        android:id="@+id/mainFragment"
-        android:name="com.lksnext.parkingbercibengoa.view.fragment.MainFragment"
-        android:label="@string/fragment_main"
-        tools:layout="@layout/fragment_main">
-    </fragment>
-    <fragment
-        android:id="@+id/reservasFragmentRoot"
+        android:id="@+id/reservasFragment"
         android:name="com.lksnext.parkingbercibengoa.view.fragment.ReservasFragment"
-        android:label="@string/fragment_main"
-        tools:layout="@layout/fragment_main">
-    </fragment>
+        android:label="@string/fragment_reservas"
+        tools:layout="@layout/fragment_reservas" />
+
+    <fragment
+        android:id="@+id/historialFragment"
+        android:name="com.lksnext.parkingbercibengoa.view.fragment.HistorialFragment"
+        android:label="@string/fragment_historial"
+        tools:layout="@layout/fragment_historial" />
+
 </navigation>

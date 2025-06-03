@@ -24,6 +24,11 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
+        //TODO: BORRAR ESTAS DOS LINEAS AL FINALIZAR
+        binding.emailText.setText("bengoaerzi@gmail.com");
+        binding.passwordText.setText("admin1234");
+
+
         // Intentar logearse
         binding.loginButton.setOnClickListener(v -> {
             String email = binding.emailText.getText().toString();

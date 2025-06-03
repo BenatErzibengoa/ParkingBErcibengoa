@@ -4,7 +4,10 @@ import static android.view.View.VISIBLE;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
@@ -17,12 +20,16 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 
 public class Utils {
+    private Utils(){}
     public static boolean validateEmail(String email){
         return email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
     }
     public static void showError(String message, TextView errorText){
         errorText.setText(message);
         errorText.setVisibility(VISIBLE);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            errorText.setVisibility(View.GONE);
+        }, 5000);
     }
 
     public static int getColorByTipo(TipoVehiculo tipo, Context context) {
@@ -43,13 +50,17 @@ public class Utils {
     public static String formatearFecha(LocalDate fecha) {
         LocalDate hoy = LocalDate.now();
         LocalDate mañana = hoy.plusDays(1);
+        LocalDate ayer = hoy.minusDays(1);
+
         String prefijo;
 
         if (fecha.equals(hoy)) {
             prefijo = "Hoy, ";
         } else if (fecha.equals(mañana)) {
             prefijo = "Mañana, ";
-        } else {
+        } else if(fecha.equals(ayer)) {
+            prefijo = "Ayer, ";
+        }else{
             prefijo = "";
         }
 
