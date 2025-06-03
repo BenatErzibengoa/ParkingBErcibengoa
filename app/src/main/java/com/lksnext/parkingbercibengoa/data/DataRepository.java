@@ -1,7 +1,5 @@
 package com.lksnext.parkingbercibengoa.data;
 
-import android.util.Log;
-
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -10,13 +8,26 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.lksnext.parkingbercibengoa.domain.Callback;
 
 public class DataRepository {
 
+    private final FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
     private static DataRepository instance;
 
+    private static final String SERVER_ERROR = "server_error";
+
+
     private DataRepository(){
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+    }
+
+    public DataRepository(FirebaseFirestore db, FirebaseAuth mAuth) {
+        this.db = db;
+        this.mAuth = mAuth;
     }
 
     public static synchronized DataRepository getInstance(){
@@ -27,7 +38,7 @@ public class DataRepository {
     }
 
     public void login(String email, String pass, Callback callback){
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
+        mAuth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         callback.onSuccess();
@@ -40,11 +51,10 @@ public class DataRepository {
     }
 
     public void register(String fullName, String email, String pass, Callback callback){
-        FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(email, pass)
+        mAuth.createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        FirebaseUser user = mAuth.getCurrentUser();
 
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                 .setDisplayName(fullName)
@@ -55,7 +65,7 @@ public class DataRepository {
                                     if (profileUpdateTask.isSuccessful()) {
                                         callback.onSuccess();
                                     } else {
-                                        callback.onFailure("server_error");
+                                        callback.onFailure(SERVER_ERROR);
                                     }
                                 });
                     } else {
@@ -67,7 +77,7 @@ public class DataRepository {
     }
 
     public void changePassword(String email, Callback callback){
-        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+        mAuth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         callback.onSuccess();
@@ -100,7 +110,7 @@ public class DataRepository {
 
         if (exception instanceof FirebaseAuthException) {
             String errorCode = ((FirebaseAuthException) exception).getErrorCode();
-            return errorCode != null ? errorCode : "server_error";
+            return errorCode != null ? errorCode : SERVER_ERROR;
         }
 
         String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
@@ -108,7 +118,7 @@ public class DataRepository {
             return "no_connection";
         }
 
-        return "server_error";
+        return SERVER_ERROR;
     }
 
 
