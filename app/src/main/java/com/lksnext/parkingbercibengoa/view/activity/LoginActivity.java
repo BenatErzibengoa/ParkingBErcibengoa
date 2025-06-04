@@ -60,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
             if (logged != null) {
                 if (logged) {
                     Log.d("LoginActivity", "Login correcto");
-                    startActivity(new Intent(LoginActivity.this, NuevaReservaActivity.class));
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 } else {
                     //La logica para mostrar el error se hace en otro listener
                     Log.d("LoginActivity", "Login incorrecto");
