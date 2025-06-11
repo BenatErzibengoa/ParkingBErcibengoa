@@ -1,5 +1,7 @@
 package com.lksnext.parkingbercibengoa.domain;
 
+import android.util.Log;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,12 +16,13 @@ public class Usuario {
     private List<Vehiculo> vehiculos;
     private List<Reserva> reservas;
 
-    public Usuario(String nombre, String email, String contrasena, LocalDate fechaDeNacimiento) {
+    public Usuario(String nombre, String email, String contrasena) {
         this.nombre = nombre;
         this.email = email;
         this.contrasena = contrasena;
-        this.fechaDeNacimiento = fechaDeNacimiento;
     }
+
+    public Usuario(){}
 
     public void reservar(Vehiculo vehiculo, Plaza plaza, LocalDateTime fechaInicio, Duration duracion) {
         HorarioPlaza horarioPlaza = new HorarioPlaza(plaza, fechaInicio.toLocalDate());  //TODO: Esto se debe obtener mediante la base de datos
@@ -30,7 +33,7 @@ public class Usuario {
             // Añadir reserva a la lista
             reservas.add(reservaCreada);
         } else {
-            System.out.println("Error: No se pudo realizar la reserva");
+            Log.d("Usuario", "Error: No se pudo realizar la reserva");
         }
     }
 

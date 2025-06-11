@@ -16,8 +16,13 @@ import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.UUID;
 
 public class Utils {
     private Utils(){}
@@ -76,6 +81,16 @@ public class Utils {
             return "Eléctrico";
         }
         return nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
+    }
+
+    public static LocalDateTime parseFechaHora(String fecha, String hora) throws DateTimeParseException {
+        String fechaHora = fecha + " " + hora;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        return LocalDateTime.parse(fechaHora, formatter);
+    }
+
+    public static String generarUUID() {
+        return UUID.randomUUID().toString();
     }
 
     public static String getMensajeError(String errorCode) {

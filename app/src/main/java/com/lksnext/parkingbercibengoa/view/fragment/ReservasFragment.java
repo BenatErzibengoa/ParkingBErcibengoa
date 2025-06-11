@@ -1,17 +1,24 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
+
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
 import com.lksnext.parkingbercibengoa.view.activity.NuevaReservaActivity;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
+import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
 public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
 
@@ -31,11 +38,21 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
 
     @Override
     protected ReservasViewModel getViewModel() {
-        if (viewModel == null)
-            viewModel = new ViewModelProvider(this).get(ReservasViewModel.class);
+        if (viewModel == null) {
+            viewModel = ReservasViewModelFactory.getSharedInstance();
+        }
         return viewModel;
     }
 
+    //Necesario para visualizar las nuevas reservas creadas
+    private ActivityResultLauncher<Intent> nuevaReservaLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    getViewModel().cargarReservasDelUsuario();
+                }
+            }
+    );
     @Override
     protected void observarReservas() {
         getViewModel().getReservas().observe(getViewLifecycleOwner(),
@@ -46,7 +63,7 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     @Override
     protected void onExtraViewReady() {
         binding.btnNuevaReserva.setOnClickListener(v -> {
-            startActivity(new Intent(requireContext(), NuevaReservaActivity.class));
+            nuevaReservaLauncher.launch(new Intent(requireContext(), NuevaReservaActivity.class));
         });
     }
 }

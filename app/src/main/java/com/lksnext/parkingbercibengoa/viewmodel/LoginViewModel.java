@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel;
 
 import com.lksnext.parkingbercibengoa.data.DataRepository;
 import com.lksnext.parkingbercibengoa.domain.Callback;
+import com.lksnext.parkingbercibengoa.domain.LoginCallback;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
 
 public class LoginViewModel extends ViewModel {
 
-    // Aquí puedes declarar los LiveData y métodos necesarios para la vista de inicio de sesión
+    private MutableLiveData<Usuario> usuarioLiveData = new MutableLiveData<>();
     MutableLiveData<Boolean> logged = new MutableLiveData<>(null);
     MutableLiveData<String> error = new MutableLiveData<>(null);
 
@@ -22,23 +24,23 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void loginUser(String email, String password) {
-        //Clase para comprobar si los datos de inicio de sesión son correctos o no
-        DataRepository.getInstance().login(email, password, new Callback() {
-            //En caso de que el login sea correcto, que se hace
+        DataRepository.getInstance().login(email, password, new LoginCallback() {
             @Override
-            public void onSuccess() {
-                //TODO
+            public void onSuccess(Usuario usuario) {
+                usuarioLiveData.postValue(usuario);
                 logged.setValue(Boolean.TRUE);
             }
 
-            //En caso de que el login sea incorrecto, que se hace
             @Override
             public void onFailure(String errorCode) {
-                //TODO
                 logged.setValue(Boolean.FALSE);
                 error.setValue(errorCode);
             }
         });
+    }
+
+    public Usuario getUsuario(){
+        return usuarioLiveData.getValue();
     }
 }
 

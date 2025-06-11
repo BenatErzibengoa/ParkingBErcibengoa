@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
 
 public class RegisterViewModel extends ViewModel {
     // Aquí puedes declarar los LiveData y métodos necesarios para la vista de registro
@@ -21,7 +22,8 @@ public class RegisterViewModel extends ViewModel {
     }
 
     public void registerUser(String fullName, String email, String password) {
-        DataRepository.getInstance().register(fullName, email, password, new Callback() {
+        Usuario usuario = new Usuario(fullName, email, password);
+        DataRepository.getInstance().register(usuario, new Callback() {
             @Override
             public void onSuccess() {
                 registered.setValue(Boolean.TRUE);

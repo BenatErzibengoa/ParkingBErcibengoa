@@ -67,4 +67,11 @@ public class HorarioPlaza {
             time = time.plusMinutes(1);
         }
     }
+
+    public Plaza getPlaza(){return plaza;}
+    public void setPlaza(Plaza plaza) {this.plaza = plaza;}
+    public LocalDate getDia(){return dia;}
+    public void setDia(LocalDate dia){this.dia = dia;}
+    public BitSet getHorario(){return horario;}
+    public void setHorario(BitSet horario){this.horario = horario;}
 }

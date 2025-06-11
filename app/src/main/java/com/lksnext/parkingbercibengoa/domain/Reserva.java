@@ -22,6 +22,7 @@ public class Reserva {
         this.plaza = plaza;
     }
 
+    public Reserva(){}
 
 
 
