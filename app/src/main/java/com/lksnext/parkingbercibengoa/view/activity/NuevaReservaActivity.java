@@ -115,7 +115,6 @@ public class NuevaReservaActivity extends AppCompatActivity {
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             Vehiculo seleccionado = adapter.getItem(position);
             if (seleccionado.getMarca().equals("➕ Nuevo vehículo")) {
-                // Abrir actividad para crear uno nuevo
                 // startActivity(new Intent(this, NuevaReservaActivity.class));
                 return;
             }
@@ -160,7 +159,7 @@ public class NuevaReservaActivity extends AppCompatActivity {
                     .setTitle("Reserva confirmada")
                     .setMessage("Tu reserva ha sido registrada correctamente.")
                     .setPositiveButton("OK", (dialog, which) -> {
-                        finish(); // Ya no necesitamos setResult(RESULT_OK)
+                        finish();
                     })
                     .show();
 
@@ -170,15 +169,15 @@ public class NuevaReservaActivity extends AppCompatActivity {
         }
     }
     private void observeViewModel() {
+        /*
         viewModel.getUsuarioLiveData().observe(this, usuario -> {
             if (usuario == null) {
                 Utils.showError("Usuario no encontrado", binding.errorText);
-                // Puedes hacer algo como cerrar la activity o volver a login
             } else {
                 usuarioActual = usuario;  // guardo el usuario para usar en reservar()
             }
         });
-
+        */
         viewModel.getVehiculos().observe(this, vehiculos -> {
             if (vehiculos != null) {
                 listaVehiculos.clear();

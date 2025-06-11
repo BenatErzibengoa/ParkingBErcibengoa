@@ -21,4 +21,9 @@ public class Vehiculo {
 
     public TipoVehiculo getTipoVehiculo(){return tipoVehiculo;}
     public void setTipoVehiculo(TipoVehiculo tipoVehiculo){this.tipoVehiculo=tipoVehiculo;}
+
+    @Override
+    public String toString() {
+        return getMarca();
+    }
 }
