@@ -24,10 +24,10 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void loginUser(String email, String password) {
-        DataRepository.getInstance().login(email, password, new LoginCallback() {
+        DataRepository.getInstance().login(email, password, new Callback() {
             @Override
-            public void onSuccess(Usuario usuario) {
-                usuarioLiveData.postValue(usuario);
+            public void onSuccess() {
+                //usuarioLiveData.postValue(usuario);
                 logged.setValue(Boolean.TRUE);
             }
 

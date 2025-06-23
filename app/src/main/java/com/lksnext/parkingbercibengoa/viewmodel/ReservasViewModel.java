@@ -7,7 +7,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
 import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
@@ -90,9 +89,9 @@ public class ReservasViewModel extends ViewModel {
         reservas.setValue(nuevaLista);
     }
 
-    public void cargarUsuario(Context context) {
+    /*public void cargarUsuario(Context context) {
         SessionManager sessionManager = new SessionManager(context);
         Usuario usuario = sessionManager.getUsuario();
         usuarioActual.setValue(usuario);
-    }
+    }*/
 }

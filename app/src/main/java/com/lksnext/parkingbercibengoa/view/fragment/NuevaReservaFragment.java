@@ -1,5 +1,6 @@
-package com.lksnext.parkingbercibengoa.view.activity;
+package com.lksnext.parkingbercibengoa.view.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -7,16 +8,13 @@ import android.widget.ListPopupWindow;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
-import com.lksnext.parkingbercibengoa.databinding.ActivityNuevaReservaBinding;
-import com.lksnext.parkingbercibengoa.domain.Plaza;
+import com.lksnext.parkingbercibengoa.databinding.FragmentNuevaReservaBinding;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Usuario;
@@ -29,9 +27,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class NuevaReservaActivity extends AppCompatActivity {
+public class NuevaReservaFragment extends AppCompatActivity {
 
-    ActivityNuevaReservaBinding binding;
+    FragmentNuevaReservaBinding binding;
     private ReservasViewModel viewModel;
 
     private ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
@@ -43,12 +41,12 @@ public class NuevaReservaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityNuevaReservaBinding.inflate(getLayoutInflater());
+        binding = FragmentNuevaReservaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         viewModel = ReservasViewModelFactory.getSharedInstance();
         observeViewModel();
-        viewModel.cargarUsuario(this);
+        //viewModel.cargarUsuario(this);
         viewModel.cargarVehiculos();
 
         binding.backButton.setOnClickListener(v -> finish());
@@ -114,14 +112,14 @@ public class NuevaReservaActivity extends AppCompatActivity {
 
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             Vehiculo seleccionado = adapter.getItem(position);
-            if (seleccionado.getMarca().equals("➕ Nuevo vehículo")) {
-                // startActivity(new Intent(this, NuevaReservaActivity.class));
+            if (seleccionado.getNombre().equals("➕ Nuevo vehículo")) {
+                startActivity(new Intent(this, NuevoVehiculoFragment.class));
                 return;
             }
             vehiculoSeleccionado = seleccionado;
 
             // Mostrar el modelo en pantalla
-            binding.vehiculoText.setText(seleccionado.getMarca());
+            binding.vehiculoText.setText(seleccionado.getNombre());
             listPopupWindow.dismiss();
         });
         listPopupWindow.show();
