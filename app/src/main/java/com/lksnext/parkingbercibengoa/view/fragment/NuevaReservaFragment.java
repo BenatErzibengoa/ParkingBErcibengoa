@@ -112,14 +112,15 @@ public class NuevaReservaFragment extends AppCompatActivity {
 
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             Vehiculo seleccionado = adapter.getItem(position);
-            if (seleccionado.getNombre().equals("➕ Nuevo vehículo")) {
+            if (seleccionado.getModelo().equals("➕ Nuevo vehículo")) {
                 startActivity(new Intent(this, NuevoVehiculoFragment.class));
+                listPopupWindow.dismiss();
                 return;
             }
             vehiculoSeleccionado = seleccionado;
 
             // Mostrar el modelo en pantalla
-            binding.vehiculoText.setText(seleccionado.getNombre());
+            binding.vehiculoText.setText(seleccionado.getModelo());
             listPopupWindow.dismiss();
         });
         listPopupWindow.show();

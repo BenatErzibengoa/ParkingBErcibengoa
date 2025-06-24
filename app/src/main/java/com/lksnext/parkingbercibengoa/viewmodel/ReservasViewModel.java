@@ -72,6 +72,18 @@ public class ReservasViewModel extends ViewModel {
         }).start();
     }
 
+    public void añadirVehiculo(Vehiculo nuevoVehiculo) {
+        ArrayList<Vehiculo> listaActual = vehiculos.getValue();
+        ArrayList<Vehiculo> nuevaLista = new ArrayList<>();
+
+        if (listaActual != null) {
+            nuevaLista.addAll(listaActual);
+        }
+
+        nuevaLista.add(nuevoVehiculo);
+        vehiculos.setValue(nuevaLista);
+    }
+
     public void cargarVehiculosDesdeRepositorio() {
         //repository.getVehiculos().observeForever(vehiculosList -> {
         //     vehiculos.setValue(vehiculosList);
@@ -88,6 +100,7 @@ public class ReservasViewModel extends ViewModel {
         nuevaLista.add(reserva);
         reservas.setValue(nuevaLista);
     }
+
 
     /*public void cargarUsuario(Context context) {
         SessionManager sessionManager = new SessionManager(context);
