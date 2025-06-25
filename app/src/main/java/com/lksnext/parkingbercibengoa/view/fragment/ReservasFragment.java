@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 
+import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
@@ -58,7 +59,12 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     @Override
     protected void onExtraViewReady() {
         binding.btnNuevaReserva.setOnClickListener(v -> {
-            nuevaReservaLauncher.launch(new Intent(requireContext(), NuevaReservaFragment.class));
+            NuevaReservaFragment nuevaReservaFragment = new NuevaReservaFragment();
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.flFragment, nuevaReservaFragment) // flFragment es el contenedor de la Main Activity
+                    .addToBackStack(null) // Boton back
+                    .commit();
         });
     }
 }

@@ -1,49 +1,59 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentNuevoVehiculoBinding;
-import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-public class NuevoVehiculoFragment extends AppCompatActivity {
+public class NuevoVehiculoFragment extends Fragment {
 
     private ReservasViewModel viewModel;
-    FragmentNuevoVehiculoBinding binding;
-    List<TipoVehiculo> tiposVehiculo = Arrays.asList(TipoVehiculo.COCHE, TipoVehiculo.ELECTRICO, TipoVehiculo.MOTO, TipoVehiculo.DISCAPACITADO);
+    private FragmentNuevoVehiculoBinding binding;
+    private List<TipoVehiculo> tiposVehiculo = Arrays.asList(
+            TipoVehiculo.COCHE, TipoVehiculo.ELECTRICO, TipoVehiculo.MOTO, TipoVehiculo.DISCAPACITADO
+    );
 
-    TipoVehiculo tipoSeleccionado = null;
+    private TipoVehiculo tipoSeleccionado = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        viewModel = ReservasViewModelFactory.getSharedInstance();
-        binding = FragmentNuevoVehiculoBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        binding.vehiculoText.setOnClickListener(v -> {showVehicleSelector();});
-        binding.crearVehiculoButton.setOnClickListener(v -> {crearVehiculo();});
-
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentNuevoVehiculoBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewModel = ReservasViewModelFactory.getSharedInstance();
+
+        binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
+        binding.crearVehiculoButton.setOnClickListener(v -> crearVehiculo());
+    }
+
     private void showVehicleSelector() {
-        ListPopupWindow listPopupWindow = new ListPopupWindow(this);
-        // Crear adaptador para el dropdown
-        ArrayAdapter<TipoVehiculo> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, tiposVehiculo);
+        ListPopupWindow listPopupWindow = new ListPopupWindow(requireContext());
+        ArrayAdapter<TipoVehiculo> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                tiposVehiculo
+        );
         listPopupWindow.setAdapter(adapter);
         listPopupWindow.setAnchorView(binding.vehiculoText);
         listPopupWindow.setWidth(binding.vehiculoText.getWidth());
@@ -51,11 +61,10 @@ public class NuevoVehiculoFragment extends AppCompatActivity {
 
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             tipoSeleccionado = adapter.getItem(position);
-
-            // Mostrar el modelo en pantalla
             binding.vehiculoText.setText(tipoSeleccionado.toString());
             listPopupWindow.dismiss();
         });
+
         listPopupWindow.show();
     }
 
@@ -70,17 +79,15 @@ public class NuevoVehiculoFragment extends AppCompatActivity {
         }
 
         Vehiculo nuevoVehiculo = new Vehiculo(matricula, modelo, tipo);
-
         viewModel.añadirVehiculo(nuevoVehiculo);
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Vehículo guardado")
                 .setMessage("El vehículo ha sido añadido correctamente.")
                 .setPositiveButton("OK", (dialog, which) -> {
-                    finish();
+                    // Aquí puedes usar Navigation para volver atrás
+                    requireActivity().onBackPressed(); // O usa NavController si estás en Navigation Component
                 })
                 .show();
     }
-
-
 }
