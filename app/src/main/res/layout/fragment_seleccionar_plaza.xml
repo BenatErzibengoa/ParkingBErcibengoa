@@ -38,6 +38,7 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
             <TextView
+                android:id="@+id/text_fecha"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="25 Jun 2025"
@@ -60,6 +61,7 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
             <TextView
+                android:id="@+id/text_horario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="09:00 - 17:00"
@@ -81,6 +83,7 @@
                 android:textColor="#666666"
                 android:textSize="14sp" />
             <TextView
+                android:id="@+id/text_vehiculo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Toyota Corolla - ABC123"

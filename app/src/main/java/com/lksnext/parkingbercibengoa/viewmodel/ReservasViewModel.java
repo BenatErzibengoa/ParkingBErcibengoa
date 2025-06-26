@@ -26,6 +26,14 @@ public class ReservasViewModel extends ViewModel {
     private MutableLiveData<List<Reserva>> reservas = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Vehiculo>> vehiculos = new MutableLiveData<>();
 
+    private MutableLiveData<Vehiculo> vehiculoSeleccionado = new MutableLiveData<>();
+
+    private MutableLiveData<LocalDateTime> horaInicio = new MutableLiveData<>();
+
+    private MutableLiveData<LocalDateTime> horaFin = new MutableLiveData<>();
+
+
+
     private MutableLiveData<Usuario> usuarioActual = new MutableLiveData<>();
 
     public LiveData<List<Reserva>> getReservas() {
@@ -35,6 +43,15 @@ public class ReservasViewModel extends ViewModel {
     public LiveData<ArrayList<Vehiculo>> getVehiculos() {
         return vehiculos;
     }
+
+    public LiveData<Vehiculo> getVehiculoSeleccionado() {
+        return vehiculoSeleccionado;
+    }
+
+    public LiveData<LocalDateTime> gethoraInicio() {return horaInicio;}
+    public LiveData<LocalDateTime> gethoraFin() {return horaFin;}
+
+
 
     public LiveData<Usuario> getUsuarioLiveData() {
         return usuarioActual;
@@ -71,6 +88,10 @@ public class ReservasViewModel extends ViewModel {
             vehiculos.postValue(listaVehiculos);
         }).start();
     }
+
+    public void setVehiculoSeleccionado(Vehiculo vehiculo){vehiculoSeleccionado.setValue(vehiculo);}
+    public void setHoraInicio(LocalDateTime hora){horaInicio.setValue(hora);}
+    public void setHoraFin(LocalDateTime hora){horaFin.setValue(hora);}
 
     public void añadirVehiculo(Vehiculo nuevoVehiculo) {
         ArrayList<Vehiculo> listaActual = vehiculos.getValue();

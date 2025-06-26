@@ -125,9 +125,10 @@ public class NuevaReservaFragment extends Fragment {
                 listPopupWindow.dismiss();
                 return;
             }
-            vehiculoSeleccionado = seleccionado;
             if (seleccionado != null) {
                 binding.vehiculoText.setText(seleccionado.getModelo());
+                vehiculoSeleccionado = seleccionado;
+                viewModel.setVehiculoSeleccionado(vehiculoSeleccionado);
             }
             listPopupWindow.dismiss();
         });
@@ -154,11 +155,15 @@ public class NuevaReservaFragment extends Fragment {
                 return;
             }
 
+
             Duration duracion = Duration.between(inicio, fin);
 
             //Reserva reserva = new Reserva(Utils.generarUUID(), usuarioActual, vehiculo, inicio, duracion, null);
 
             //viewModel.reservarPlaza(reserva);
+
+            viewModel.setHoraInicio(inicio);
+            viewModel.setHoraFin(fin);
 
 
             Fragment seleccionarPlazaFragment = new SeleccionarPlazaFragment();

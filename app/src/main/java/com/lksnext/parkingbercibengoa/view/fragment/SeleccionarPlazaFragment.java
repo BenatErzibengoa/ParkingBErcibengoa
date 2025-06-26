@@ -15,10 +15,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import com.lksnext.parkingbercibengoa.R;
+import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentSeleccionarPlazaBinding;
+import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
+import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
 public class SeleccionarPlazaFragment extends Fragment {
 
+    private ReservasViewModel viewModel;
     private FragmentSeleccionarPlazaBinding binding;
     private String selectedSpot = null;
     private View currentSelectedView = null;
@@ -53,16 +57,25 @@ public class SeleccionarPlazaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = ReservasViewModelFactory.getSharedInstance();
 
         setupToolbar();
-        setupListeners();
+
+        String modelo = viewModel.getVehiculoSeleccionado().getValue().getModelo();
+        String matricula = viewModel.getVehiculoSeleccionado().getValue().getMatricula();
+
+        binding.textFecha.setText(Utils.parseSeleccionPlazaFecha(viewModel.gethoraInicio().getValue()));
+        binding.textHorario.setText(Utils.parseSeleccionPlazaHora(viewModel.gethoraInicio().getValue(), viewModel.gethoraFin().getValue()));
+        binding.textVehiculo.setText(modelo + " " + matricula);
+
         createParkingGrid();
+
+        binding.reservarButton.setOnClickListener(v -> confirmReservation());
+
     }
 
     private void setupToolbar() {
-        // Si usás un Toolbar dentro del fragment (requiere que la activity soporte Toolbar)
         Toolbar toolbar = binding.toolbar;
-        // Necesitás que la Activity sea AppCompatActivity para setSupportActionBar:
         if (getActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
             androidx.appcompat.app.AppCompatActivity activity = (androidx.appcompat.app.AppCompatActivity) getActivity();
             activity.setSupportActionBar(toolbar);
@@ -79,9 +92,6 @@ public class SeleccionarPlazaFragment extends Fragment {
         });
     }
 
-    private void setupListeners() {
-        binding.reservarButton.setOnClickListener(v -> confirmReservation());
-    }
 
     private void createParkingGrid() {
         GridLayout grid = binding.parkingGrid;
@@ -101,8 +111,6 @@ public class SeleccionarPlazaFragment extends Fragment {
                 params.columnSpec = GridLayout.spec(j);
                 params.rowSpec = GridLayout.spec(i);
                 params.setMargins(8, 8, 8, 8);
-
-
 
                 spotView.setLayoutParams(params);
                 grid.addView(spotView);
