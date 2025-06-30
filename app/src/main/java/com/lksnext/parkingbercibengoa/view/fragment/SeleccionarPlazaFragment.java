@@ -1,5 +1,10 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
+import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.COCHE;
+import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.DISCAPACITADO;
+import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.ELECTRICO;
+import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.MOTO;
+
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -17,34 +22,43 @@ import androidx.fragment.app.Fragment;
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentSeleccionarPlazaBinding;
+import com.lksnext.parkingbercibengoa.domain.Plaza;
+import com.lksnext.parkingbercibengoa.domain.Reserva;
+import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
+import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class SeleccionarPlazaFragment extends Fragment {
 
     private ReservasViewModel viewModel;
     private FragmentSeleccionarPlazaBinding binding;
-    private String selectedSpot = null;
+    private ParkingSpot selectedSpot = null;
     private View currentSelectedView = null;
 
     private final ParkingSpot[][] spots = {
-            {new ParkingSpot("A1", "coche", true, "🚗"),
-             new ParkingSpot("A2", "coche", false, "🚗"),
-             new ParkingSpot("A3", "coche", true, "🚗"),
-             new ParkingSpot("A4", "electrico", false, "⚡")},
-            {new ParkingSpot("B1", "coche", true, "🚗"),
-             new ParkingSpot("B2", "coche", true, "🚗"),
-             new ParkingSpot("B3", "coche", false, "🚗"),
-             new ParkingSpot("B4", "electrico", false, "⚡")},
-            {new ParkingSpot("C1", "coche", true, "🚗"),
-             new ParkingSpot("C2", "coche", false, "🚗"),
-             new ParkingSpot("C3", "coche", true, "🚗"),
-             new ParkingSpot("C4", "electrico", false, "⚡")},
-            {new ParkingSpot("D1", "moto", false, "🏍️"),
-             new ParkingSpot("D2", "moto", false, "🏍️"),
-             new ParkingSpot("D3", "discapacitado", false, "♿"),
-             new ParkingSpot("D4", "discapacitado", false, "♿")}
+            {new ParkingSpot("A1", COCHE, true, "🚗"),
+             new ParkingSpot("A2", COCHE, false, "🚗"),
+             new ParkingSpot("A3", COCHE, true, "🚗"),
+             new ParkingSpot("A4", ELECTRICO, false, "⚡")},
+            {new ParkingSpot("B1", COCHE, true, "🚗"),
+             new ParkingSpot("B2", COCHE, true, "🚗"),
+             new ParkingSpot("B3", COCHE, false, "🚗"),
+             new ParkingSpot("B4", ELECTRICO, false, "⚡")},
+            {new ParkingSpot("C1", COCHE, true, "🚗"),
+             new ParkingSpot("C2", COCHE, false, "🚗"),
+             new ParkingSpot("C3", COCHE, true, "🚗"),
+             new ParkingSpot("C4", ELECTRICO, false, "⚡")},
+            {new ParkingSpot("D1", MOTO, false, "🏍️"),
+             new ParkingSpot("D2", MOTO, false, "🏍️"),
+             new ParkingSpot("D3", DISCAPACITADO, false, "♿"),
+             new ParkingSpot("D4", DISCAPACITADO, false, "♿")}
     };
+
 
     @Nullable
     @Override
@@ -133,17 +147,18 @@ public class SeleccionarPlazaFragment extends Fragment {
 
         layout.addView(iconView);
 
-        int squareSize = (int) (80 * getResources().getDisplayMetrics().density);
-        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-        params.width = squareSize;
-        params.height = squareSize;
-        params.setMargins(8, 8, 8, 8);
-        layout.setLayoutParams(params);
+        // Obtener el tipo de vehículo seleccionado
+        String tipoVehiculo = viewModel.getVehiculoSeleccionado().getValue().getTipoVehiculo().name().toLowerCase();
 
-        if (spot.isCompatibleWithCar() && spot.isAvailable) {
+        boolean esCompatible = isCompatible(
+                viewModel.getVehiculoSeleccionado().getValue().getTipoVehiculo(),
+                spot.tipo
+        );
+
+        if (esCompatible && spot.isAvailable) {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_available));
             layout.setOnClickListener(v -> selectSpot(v, spot));
-        } else if (!spot.isAvailable && spot.isCompatibleWithCar()) {
+        } else if (esCompatible && !spot.isAvailable) {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_occupied));
         } else {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_unavailable));
@@ -151,6 +166,23 @@ public class SeleccionarPlazaFragment extends Fragment {
 
         return layout;
     }
+
+    private boolean isCompatible(TipoVehiculo tipoVehiculo, TipoVehiculo tipoPlaza) {
+        switch (tipoVehiculo) {
+            case COCHE:
+                return tipoPlaza == TipoVehiculo.COCHE;
+            case ELECTRICO:
+                return tipoPlaza == TipoVehiculo.COCHE || tipoPlaza == TipoVehiculo.ELECTRICO;
+            case DISCAPACITADO:
+                return tipoPlaza == TipoVehiculo.COCHE || tipoPlaza == TipoVehiculo.DISCAPACITADO;
+            case MOTO:
+                return tipoPlaza == TipoVehiculo.MOTO;
+            default:
+                return false;
+        }
+    }
+
+
 
 
     private void selectSpot(View view, ParkingSpot spot) {
@@ -160,12 +192,10 @@ public class SeleccionarPlazaFragment extends Fragment {
 
         view.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_selected));
         currentSelectedView = view;
-        selectedSpot = spot.id;
+        selectedSpot = spot;
 
         binding.selectedInfo.setVisibility(View.VISIBLE);
-        binding.selectedDetails.setText("Plaza " + spot.id + " - Tipo: " +
-                                        spot.type.substring(0, 1).toUpperCase() + spot.type.substring(1) +
-                                        "\nCerca de la entrada principal");
+        binding.selectedDetails.setText("Plaza " + spot.id + " - Tipo: " + spot.tipo +"\nCerca de la entrada principal");
 
         binding.reservarButton.setEnabled(true);
         binding.reservarButton.setAlpha(1.0f);
@@ -173,13 +203,44 @@ public class SeleccionarPlazaFragment extends Fragment {
 
     private void confirmReservation() {
         if (selectedSpot != null && getContext() != null) {
+
+            // Recuperamos datos previamente guardados
+            Vehiculo vehiculo = viewModel.getVehiculoSeleccionado().getValue();
+            Usuario usuario = null;// TODO: Recuperar usuario actual
+            LocalDateTime inicio = viewModel.gethoraInicio().getValue();
+            LocalDateTime fin = viewModel.gethoraFin().getValue();
+            Duration duracion = Duration.between(inicio, fin);
+
+            // Crear objeto Plaza
+            Plaza plaza = new Plaza();
+            plaza.setId(selectedSpot.id);
+            plaza.setTipo(selectedSpot.tipo);
+
+            // Crear la reserva
+            Reserva reserva = new Reserva(
+                    java.util.UUID.randomUUID().toString(),  // ID aleatorio único
+                    usuario,
+                    vehiculo,
+                    inicio,
+                    duracion,
+                    plaza
+            );
+
+            viewModel.reservarPlaza(reserva);
+
+            // Mostrar confirmación
             new AlertDialog.Builder(requireContext())
                     .setTitle("¡Reserva confirmada!")
-                    .setMessage("Plaza: " + selectedSpot + "\nFecha: 25 Jun 2025\nHorario: 09:00 - 17:00")
+                    .setMessage("Plaza: " + selectedSpot.id + "\nFecha: " +
+                                Utils.parseSeleccionPlazaFecha(inicio) + "\nHorario: " +
+                                Utils.parseSeleccionPlazaHora(inicio, fin))
                     .setPositiveButton("OK", null)
                     .show();
+            requireActivity().getSupportFragmentManager().popBackStack();
+            requireActivity().getSupportFragmentManager().popBackStack();
         }
     }
+
 
     @Override
     public void onDestroyView() {
@@ -189,19 +250,32 @@ public class SeleccionarPlazaFragment extends Fragment {
 
     private static class ParkingSpot {
         String id;
-        String type;
+        TipoVehiculo tipo;
         boolean isAvailable;
         String icon;
 
-        ParkingSpot(String id, String type, boolean isAvailable, String icon) {
+        ParkingSpot(String id, TipoVehiculo tipo, boolean isAvailable, String icon) {
             this.id = id;
-            this.type = type;
+            this.tipo = tipo;
             this.isAvailable = isAvailable;
             this.icon = icon;
         }
 
-        boolean isCompatibleWithCar() {
-            return "coche".equals(type);
+        private boolean isCompatible(TipoVehiculo tipoVehiculoStr, TipoVehiculo tipoPlaza) {
+            switch (tipoVehiculoStr) {
+                case COCHE:
+                    return tipoPlaza == COCHE;
+                case ELECTRICO:
+                    return tipoPlaza == COCHE || tipoPlaza == ELECTRICO;
+                case DISCAPACITADO:
+                    return tipoPlaza == COCHE || tipoPlaza == DISCAPACITADO;
+                case MOTO:
+                    return tipoPlaza == MOTO;
+                default:
+                    return false;
+            }
         }
+
+
     }
 }

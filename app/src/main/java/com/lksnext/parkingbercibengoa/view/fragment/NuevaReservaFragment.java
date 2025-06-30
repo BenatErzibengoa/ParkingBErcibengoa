@@ -164,17 +164,10 @@ public class NuevaReservaFragment extends Fragment {
                 Utils.showError("La hora de fin debe ser después de la hora de inicio", binding.errorText);
                 return;
             }
-
-
             Duration duracion = Duration.between(inicio, fin);
-
-            //Reserva reserva = new Reserva(Utils.generarUUID(), usuarioActual, vehiculo, inicio, duracion, null);
-
-            //viewModel.reservarPlaza(reserva);
 
             viewModel.setHoraInicio(inicio);
             viewModel.setHoraFin(fin);
-
 
             Fragment seleccionarPlazaFragment = new SeleccionarPlazaFragment();
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();

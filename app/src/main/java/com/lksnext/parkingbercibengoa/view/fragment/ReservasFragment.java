@@ -40,20 +40,15 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
         return viewModel;
     }
 
-    //Necesario para visualizar las nuevas reservas creadas
-    private ActivityResultLauncher<Intent> nuevaReservaLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    getViewModel().cargarReservasDelUsuario();
-                }
-            }
-    );
     @Override
     protected void observarReservas() {
-        getViewModel().getReservas().observe(getViewLifecycleOwner(),
-                reservas -> mostrarReservas(reservas, false)); // orden ascendente
-        getViewModel().cargarReservasDelUsuario();
+        getViewModel().getReservas().observe(getViewLifecycleOwner(), reservas -> {
+            mostrarReservas(reservas, false);
+        });
+
+        if (getViewModel().getReservas().getValue() == null || getViewModel().getReservas().getValue().isEmpty()) {
+            getViewModel().cargarReservasDelUsuario();
+        }
     }
 
     @Override
