@@ -67,6 +67,13 @@ public class NuevaReservaFragment extends Fragment {
         binding.reservarButton.setOnClickListener(v -> buscarPlazas());
     }
 
+    //Para que cuando vuelva de NuevoVehiculo se cargue el nuevo coche
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.cargarVehiculos();
+    }
+
     private void showCalendar() {
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Selecciona una fecha")
@@ -103,6 +110,9 @@ public class NuevaReservaFragment extends Fragment {
     }
 
     private void showVehicleSelector() {
+        Log.d("NuevaReserva", listaVehiculos.toString());
+        Log.d("NuevaReserva", viewModel.getVehiculos().getValue().toString());
+
         ListPopupWindow listPopupWindow = new ListPopupWindow(requireContext());
 
         // Crear adaptador para el dropdown

@@ -79,6 +79,9 @@ public class ReservasViewModel extends ViewModel {
     }
 
     public void cargarVehiculos() {
+        if (vehiculos.getValue() != null && !vehiculos.getValue().isEmpty()) {
+            return; // si los vehiculos han sido cargados, no hacer nada
+        }
         ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
         Vehiculo vehiculo1 = new Vehiculo("53450CCB", "Opel Zafira", TipoVehiculo.COCHE);
         Vehiculo vehiculo2 = new Vehiculo("12539MCD", "Toyota Yaris", TipoVehiculo.ELECTRICO);

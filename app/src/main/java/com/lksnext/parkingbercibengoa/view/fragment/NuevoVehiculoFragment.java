@@ -1,6 +1,7 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,16 +78,18 @@ public class NuevoVehiculoFragment extends Fragment {
             Utils.showError("Todos los campos del vehículo son obligatorios", binding.errorText);
             return;
         }
-
+        Log.d("NuevoVehiculoFragment", viewModel.getVehiculos().getValue().toString());
         Vehiculo nuevoVehiculo = new Vehiculo(matricula, modelo, tipo);
         viewModel.añadirVehiculo(nuevoVehiculo);
+        Log.d("NuevoVehiculoFragment", viewModel.getVehiculos().getValue().toString());
+
+
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Vehículo guardado")
                 .setMessage("El vehículo ha sido añadido correctamente.")
                 .setPositiveButton("OK", (dialog, which) -> {
-                    // Aquí puedes usar Navigation para volver atrás
-                    requireActivity().onBackPressed(); // O usa NavController si estás en Navigation Component
+                    requireActivity().onBackPressed();
                 })
                 .show();
     }
