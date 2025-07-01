@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
+import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.domain.CallbackList;
 import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
@@ -31,6 +32,8 @@ import java.util.List;
 
 public class ReservasViewModel extends AndroidViewModel {
 
+    private MutableLiveData<Usuario> usuario = new MutableLiveData<>();
+
     private MutableLiveData<List<Reserva>> reservas = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Vehiculo>> vehiculos = new MutableLiveData<>();
 
@@ -40,10 +43,18 @@ public class ReservasViewModel extends AndroidViewModel {
 
     private MutableLiveData<LocalDateTime> horaFin = new MutableLiveData<>();
 
-    private final MutableLiveData<String> mensajeError = new MutableLiveData<>();
+    private final MutableLiveData<String> errorCargarReservas = new MutableLiveData<>();
+    private final MutableLiveData<String> errorCargarVehiculos = new MutableLiveData<>();
+    private final MutableLiveData<String> errorAñadirReserva = new MutableLiveData<>();
+    private final MutableLiveData<String> errorAñadirVehiculo = new MutableLiveData<>();
 
 
 
+
+
+    public LiveData<Usuario> getUsuario() {
+        return usuario;
+    }
 
 
     public LiveData<List<Reserva>> getReservas() {
@@ -61,86 +72,83 @@ public class ReservasViewModel extends AndroidViewModel {
     public LiveData<LocalDateTime> gethoraInicio() {return horaInicio;}
     public LiveData<LocalDateTime> gethoraFin() {return horaFin;}
 
-    public LiveData<String> getMensajeError() {return mensajeError;}
+    public LiveData<String> getErrorCargarReservas() {return errorCargarReservas;}
+    public LiveData<String> getErrorCargarVehiculos() {return errorCargarVehiculos;}
+    public LiveData<String> getErrorAñadirReserva() {return errorAñadirReserva;}
+
+    public LiveData<String> getErrorAñadirVehiculo() {return errorAñadirVehiculo;}
+
+    public void setVehiculoSeleccionado(Vehiculo vehiculo){vehiculoSeleccionado.setValue(vehiculo);}
+    public void setHoraInicio(LocalDateTime hora){horaInicio.setValue(hora);}
+    public void setHoraFin(LocalDateTime hora){horaFin.setValue(hora);}
+
 
 
 
     public ReservasViewModel(@NonNull Application application) {
         super(application);
+        Context context = getApplication().getApplicationContext();
+        SessionManager sessionManager = new SessionManager(context);
+        usuario.setValue(sessionManager.getUsuario());
     }
 
     public void cargarReservasDelUsuario() {
         if (reservas.getValue() != null && !reservas.getValue().isEmpty()) {
             return; // si los vehiculos han sido cargados, no hacer nada
         }
-        Vehiculo vehiculo1 = new Vehiculo("9359MPK", "Opel Zafira", TipoVehiculo.COCHE);
-        Vehiculo vehiculo2 = new Vehiculo("5340CCB", "Toyota Yaris", TipoVehiculo.ELECTRICO);
-        Vehiculo vehiculo3 = new Vehiculo("3420ATB", "Ford Fiesta", TipoVehiculo.DISCAPACITADO);
-
-        Reserva reserva1 = new Reserva("1", null, vehiculo1, LocalDateTime.now(), Duration.of(1, ChronoUnit.HOURS), new Plaza("13", TipoVehiculo.COCHE));
-        Reserva reserva2 = new Reserva("2", null, vehiculo2, LocalDateTime.now().plusDays(1), Duration.of(1, ChronoUnit.HOURS), new Plaza("14", TipoVehiculo.ELECTRICO));
-        Reserva reserva3 = new Reserva("3", null, vehiculo3, LocalDateTime.now().plusDays(1).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
-
-
-        Reserva reserva4 = new Reserva("4", null, vehiculo1, LocalDateTime.now(), Duration.of(1, ChronoUnit.HOURS), new Plaza("13", TipoVehiculo.COCHE));
-        Reserva reserva5 = new Reserva("5", null, vehiculo2, LocalDateTime.now().plusDays(4), Duration.of(1, ChronoUnit.HOURS), new Plaza("14", TipoVehiculo.COCHE));
-        Reserva reserva6 = new Reserva("6", null, vehiculo3, LocalDateTime.now().plusDays(5).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
-        Reserva reserva7 = new Reserva("7", null, vehiculo3, LocalDateTime.now().plusDays(6).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
-        Reserva reserva8 = new Reserva("8", null, vehiculo3, LocalDateTime.now().plusDays(7).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
-
-        Context context = getApplication().getApplicationContext();
-        SessionManager sessionManager = new SessionManager(context);
-        Usuario usuario = sessionManager.getUsuario();
-        DataRepository.getInstance().obtenerReservasUsuario(usuario.getId(), new CallbackList<Reserva>() {
+        DataRepository.getInstance().obtenerReservasUsuario(usuario.getValue().getId(), new CallbackList<Reserva>() {
             @Override
             public void onSuccess(List<Reserva> lista) {
                 reservas.setValue(lista);
             }
             @Override
             public void onFailure(String error) {
-                mensajeError.setValue(error);
+                errorCargarReservas.setValue(error);
             }
         });
-
-        //ArrayList<Reserva> listaReservas = new ArrayList<>();
-        //listaReservas.addAll(Arrays.asList(reserva1, reserva2, reserva3, reserva4, reserva5, reserva6, reserva7, reserva8));
-        //reservas.setValue(listaReservas);
     }
 
     public void cargarVehiculos() {
         if (vehiculos.getValue() != null && !vehiculos.getValue().isEmpty()) {
-            return; // si los vehiculos han sido cargados, no hacer nada
+            return; // Si ya están cargados, no hacer nada
         }
-        ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
-        Vehiculo vehiculo1 = new Vehiculo("53450CCB", "Opel Zafira", TipoVehiculo.COCHE);
-        Vehiculo vehiculo2 = new Vehiculo("12539MCD", "Toyota Yaris", TipoVehiculo.ELECTRICO);
-
-        listaVehiculos.addAll(Arrays.asList(vehiculo1, vehiculo2));
-        new Thread(() -> {
-            vehiculos.postValue(listaVehiculos);
-        }).start();
+        DataRepository.getInstance().obtenerVehiculosUsuario(usuario.getValue().getId(), new CallbackList<Vehiculo>() {
+            @Override
+            public void onSuccess(List<Vehiculo> lista) {
+                vehiculos.postValue(new ArrayList<>(lista));
+            }
+            @Override
+            public void onFailure(String error) {
+                errorCargarVehiculos.postValue("Error al cargar vehículos: " + error);
+            }
+        });
     }
 
-    public void setVehiculoSeleccionado(Vehiculo vehiculo){vehiculoSeleccionado.setValue(vehiculo);}
-    public void setHoraInicio(LocalDateTime hora){horaInicio.setValue(hora);}
-    public void setHoraFin(LocalDateTime hora){horaFin.setValue(hora);}
+
+
 
     public void añadirVehiculo(Vehiculo nuevoVehiculo) {
-        ArrayList<Vehiculo> listaActual = vehiculos.getValue();
-        ArrayList<Vehiculo> nuevaLista = new ArrayList<>();
+        DataRepository.getInstance().añadirVehiculoAUsuario(usuario.getValue(), nuevoVehiculo, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        ArrayList<Vehiculo> listaActual = vehiculos.getValue();
+                        ArrayList<Vehiculo> nuevaLista = new ArrayList<>();
 
-        if (listaActual != null) {
-            nuevaLista.addAll(listaActual);
-        }
+                        if (listaActual != null) {
+                            nuevaLista.addAll(listaActual);
+                        }
 
-        nuevaLista.add(nuevoVehiculo);
-        vehiculos.setValue(nuevaLista);
-    }
+                        nuevaLista.add(nuevoVehiculo);
+                        vehiculos.setValue(nuevaLista);
+                        Log.d("NuevoVehiculoFragment", "Vehículo guardado correctamente");
+                    }
 
-    public void cargarVehiculosDesdeRepositorio() {
-        //repository.getVehiculos().observeForever(vehiculosList -> {
-        //     vehiculos.setValue(vehiculosList);
-        // });
+                    @Override
+                    public void onFailure(String message) {
+                        Log.e("NuevoVehiculoFragment", "Error al guardar el vehículo: " + message);
+                        errorAñadirVehiculo.setValue(message);
+                    }
+        });
     }
 
     public void reservarPlaza(Reserva reserva) {

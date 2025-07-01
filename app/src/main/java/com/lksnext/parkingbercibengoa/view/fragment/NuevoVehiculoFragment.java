@@ -14,7 +14,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.lksnext.parkingbercibengoa.configuration.Utils;
+import com.lksnext.parkingbercibengoa.data.DataRepository;
 import com.lksnext.parkingbercibengoa.databinding.FragmentNuevoVehiculoBinding;
+import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
@@ -78,10 +80,20 @@ public class NuevoVehiculoFragment extends Fragment {
             Utils.showError("Todos los campos del vehículo son obligatorios", binding.errorText);
             return;
         }
-        Log.d("NuevoVehiculoFragment", viewModel.getVehiculos().getValue().toString());
+
         Vehiculo nuevoVehiculo = new Vehiculo(matricula, modelo, tipo);
         viewModel.añadirVehiculo(nuevoVehiculo);
-        Log.d("NuevoVehiculoFragment", viewModel.getVehiculos().getValue().toString());
+        DataRepository.getInstance().añadirVehiculoAUsuario(null, nuevoVehiculo, new Callback() {
+            @Override
+            public void onSuccess() {
+                Log.d("NuevoVehiculoFragment", "Vehículo guardado correctamente");
+            }
+            @Override
+            public void onFailure(String message) {
+                Log.e("NuevoVehiculoFragment", "Error al guardar el vehículo: " + message);
+            }
+
+        });
 
 
 

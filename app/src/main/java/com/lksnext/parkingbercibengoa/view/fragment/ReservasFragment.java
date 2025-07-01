@@ -47,7 +47,7 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
             mostrarReservas(reservas, false);
         });
 
-        getViewModel().getMensajeError().observe(getViewLifecycleOwner(), error -> {
+        getViewModel().getErrorCargarReservas().observe(getViewLifecycleOwner(), error -> {
             if (error != null) {
                 Toast.makeText(requireContext(), "Error al cargar reservas: " + error, Toast.LENGTH_SHORT).show();
             }

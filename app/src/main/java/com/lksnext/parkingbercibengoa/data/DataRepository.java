@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.VehiculoDTO;
@@ -57,28 +58,6 @@ public class DataRepository {
                 });
     }
 
-    public void obtenerUsuario(String uid, LoginCallback callback) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("usuarios")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Map<String, Object> data = documentSnapshot.getData();
-                        Usuario usuario = UsuarioDTO.fromMap(data);
-                        usuario.setId(uid);
-                        callback.onSuccess(usuario);
-                    } else {
-                        callback.onFailure("ERROR_USER_NOT_FOUND");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    callback.onFailure(e.getMessage());
-                });
-    }
-
-
-
     public void register(String fullname, String email, String contraseña, Callback callback) {
         FirebaseAuth.getInstance()
                 .createUserWithEmailAndPassword(email, contraseña)
@@ -115,6 +94,39 @@ public class DataRepository {
                 });
     }
 
+    public void changePassword(String email, Callback callback){
+        mauth.getInstance().sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        callback.onSuccess();
+                    } else {
+                        Exception exception = task.getException();
+                        String errorCode = parseFirebaseError(exception);
+                        callback.onFailure(errorCode);
+                    }
+                });
+    }
+
+    public void obtenerUsuario(String uid, LoginCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        Usuario usuario = UsuarioDTO.fromMap(data);
+                        usuario.setId(uid);
+                        callback.onSuccess(usuario);
+                    } else {
+                        callback.onFailure("ERROR_USER_NOT_FOUND");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
     public void obtenerVehiculosUsuario(String uid, CallbackList<Vehiculo> callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("usuarios")
@@ -132,6 +144,20 @@ public class DataRepository {
                 .addOnFailureListener(e -> {
                     callback.onFailure(e.getMessage());
                 });
+    }
+
+    public void añadirVehiculoAUsuario(Usuario usuario, Vehiculo vehiculo, Callback callback) {
+        if (usuario == null || usuario.getId() == null) {
+            callback.onFailure("Usuario inválido");
+            return;
+        }
+        db.collection("usuarios")
+                .document(usuario.getId())
+                .collection("vehiculos")
+                .document(vehiculo.getMatricula())  // matricula como id del vehiculo
+                .set(VehiculoDTO.toMap(vehiculo))
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
     public void obtenerReservasUsuario(String uid, CallbackList<Reserva> callback) {
@@ -153,22 +179,6 @@ public class DataRepository {
                 });
     }
 
-
-
-
-    public void changePassword(String email, Callback callback){
-        mauth.getInstance().sendPasswordResetEmail(email)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        callback.onSuccess();
-                    } else {
-                        Exception exception = task.getException();
-                        String errorCode = parseFirebaseError(exception);
-                        callback.onFailure(errorCode);
-                    }
-                });
-    }
-
     public void guardarReserva(Reserva reserva) {
         db.collection("reservas")
                 .document(reserva.getId())
@@ -180,6 +190,11 @@ public class DataRepository {
                     Log.d("DataRepository","Error al guardar la reserva: " + e.getMessage());
                 });
     }
+
+
+
+
+
 
     private String parseFirebaseError(Exception exception) {
         if (exception == null) return "unknown_error";
