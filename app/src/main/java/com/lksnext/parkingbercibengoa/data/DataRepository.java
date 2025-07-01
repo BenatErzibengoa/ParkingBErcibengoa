@@ -10,11 +10,26 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
+import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
 import com.lksnext.parkingbercibengoa.domain.Callback;
+import com.lksnext.parkingbercibengoa.domain.LoginCallback;
+import com.lksnext.parkingbercibengoa.domain.Reserva;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
+import com.lksnext.parkingbercibengoa.domain.Vehiculo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DataRepository {
-
+    private static final String SERVER_ERROR = "server_error";  // Compliant
     private static DataRepository instance;
+    private final FirebaseAuth mauth = FirebaseAuth.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
     private DataRepository(){
     }
@@ -26,11 +41,12 @@ public class DataRepository {
         return instance;
     }
 
-    public void login(String email, String pass, Callback callback){
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
+    public void login(String email, String pass, LoginCallback callback){
+        mauth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        callback.onSuccess();
+                        String uid = mauth.getCurrentUser().getUid();
+                        obtenerUsuario(uid, callback);
                     } else {
                         Exception exception = task.getException();
                         String errorCode = parseFirebaseError(exception);
@@ -39,25 +55,55 @@ public class DataRepository {
                 });
     }
 
-    public void register(String fullName, String email, String pass, Callback callback){
+    public void obtenerUsuario(String uid, LoginCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        Usuario usuario = UsuarioDTO.fromMap(data);
+                        callback.onSuccess(usuario);
+                    } else {
+                        callback.onFailure("ERROR_USER_NOT_FOUND");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+
+
+    public void register(String fullname, String email, String contraseña, Callback callback) {
         FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(email, pass)
+                .createUserWithEmailAndPassword(email, contraseña)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+                        if (firebaseUser == null) {
+                            callback.onFailure("USER_NULL_ERROR");
+                            return;
+                        }
 
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(fullName)
+                                .setDisplayName(fullname)
                                 .build();
 
-                        user.updateProfile(profileUpdates)
-                                .addOnCompleteListener(profileUpdateTask -> {
-                                    if (profileUpdateTask.isSuccessful()) {
-                                        callback.onSuccess();
-                                    } else {
-                                        callback.onFailure("server_error");
-                                    }
-                                });
+                        firebaseUser.updateProfile(profileUpdates).addOnCompleteListener(profileUpdateTask -> {
+                            if (profileUpdateTask.isSuccessful()) {
+                                FirebaseFirestore.getInstance()
+                                        .collection("usuarios")
+                                        .document(firebaseUser.getUid())  // es importante que sea UID y no el email, si no puede dar error
+                                        .set(UsuarioDTO.toMap(new Usuario(fullname, email)))
+                                        .addOnSuccessListener(aVoid -> callback.onSuccess())
+                                        .addOnFailureListener(e -> callback.onFailure("DB_WRITE_ERROR"));
+                            } else {
+                                callback.onFailure("PROFILE_UPDATE_ERROR");
+                            }
+                        });
                     } else {
                         Exception exception = task.getException();
                         String errorCode = parseFirebaseError(exception);
@@ -66,8 +112,10 @@ public class DataRepository {
                 });
     }
 
+
+
     public void changePassword(String email, Callback callback){
-        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+        mauth.getInstance().sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         callback.onSuccess();
@@ -76,6 +124,18 @@ public class DataRepository {
                         String errorCode = parseFirebaseError(exception);
                         callback.onFailure(errorCode);
                     }
+                });
+    }
+
+    public void guardarReserva(Reserva reserva) {
+        db.collection("reservas")
+                .document(reserva.getId())
+                .set(ReservaDTO.toMap(reserva))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("DataRepository","Reserva guardada correctamente.");
+                })
+                .addOnFailureListener(e -> {
+                    Log.d("DataRepository","Error al guardar la reserva: " + e.getMessage());
                 });
     }
 
@@ -100,7 +160,7 @@ public class DataRepository {
 
         if (exception instanceof FirebaseAuthException) {
             String errorCode = ((FirebaseAuthException) exception).getErrorCode();
-            return errorCode != null ? errorCode : "server_error";
+            return errorCode != null ? errorCode : SERVER_ERROR;
         }
 
         String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
@@ -108,7 +168,11 @@ public class DataRepository {
             return "no_connection";
         }
 
-        return "server_error";
+        return SERVER_ERROR;
+    }
+
+    private List<Vehiculo> getVehiculos(Usuario usuario){
+        return new ArrayList<Vehiculo>();
     }
 
 
