@@ -26,7 +26,7 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void loginUser(Context context, String email, String password) {
-        DataRepository.getInstance().login(email, password, new LoginCallback() {
+        DataRepository.getInstance().login(email, password, new LoginCallback<Usuario>() {
             @Override
             public void onSuccess(Usuario usuario) {
                 SessionManager sessionManager = new SessionManager(context);

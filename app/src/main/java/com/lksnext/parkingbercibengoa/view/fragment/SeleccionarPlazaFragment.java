@@ -7,6 +7,7 @@ import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.MOTO;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentSeleccionarPlazaBinding;
+import com.lksnext.parkingbercibengoa.domain.HorarioPlaza;
 import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
@@ -32,33 +34,16 @@ import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public class SeleccionarPlazaFragment extends Fragment {
 
     private ReservasViewModel viewModel;
     private FragmentSeleccionarPlazaBinding binding;
-    private ParkingSpot selectedSpot = null;
+    private Plaza selectedSpot = null;
     private View currentSelectedView = null;
-
-    private final ParkingSpot[][] spots = {
-            {new ParkingSpot("A1", COCHE, true, "🚗"),
-             new ParkingSpot("A2", COCHE, false, "🚗"),
-             new ParkingSpot("A3", COCHE, true, "🚗"),
-             new ParkingSpot("A4", ELECTRICO, false, "⚡")},
-            {new ParkingSpot("B1", COCHE, true, "🚗"),
-             new ParkingSpot("B2", COCHE, true, "🚗"),
-             new ParkingSpot("B3", COCHE, false, "🚗"),
-             new ParkingSpot("B4", ELECTRICO, false, "⚡")},
-            {new ParkingSpot("C1", COCHE, true, "🚗"),
-             new ParkingSpot("C2", COCHE, false, "🚗"),
-             new ParkingSpot("C3", COCHE, true, "🚗"),
-             new ParkingSpot("C4", ELECTRICO, false, "⚡")},
-            {new ParkingSpot("D1", MOTO, false, "🏍️"),
-             new ParkingSpot("D2", MOTO, false, "🏍️"),
-             new ParkingSpot("D3", DISCAPACITADO, false, "♿"),
-             new ParkingSpot("D4", DISCAPACITADO, false, "♿")}
-    };
-
+    private List<Plaza> plazas;
 
     @Nullable
     @Override
@@ -73,19 +58,36 @@ public class SeleccionarPlazaFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
 
+        viewModel.getPlazas().observe(getViewLifecycleOwner(), plazas -> {
+            Log.d("SeleccionarPlazaFragment", "plazas cargadas ");
+            this.plazas = plazas;
+            // Sólo crear el grid si los horarios también están listos
+            Map<Plaza, HorarioPlaza> horarios = viewModel.getHorariosPorPlaza().getValue();
+            if (horarios != null) {
+                createParkingGrid();
+            }
+        });
+
+        viewModel.getHorariosPorPlaza().observe(getViewLifecycleOwner(), horarios -> {
+            Log.d("SeleccionarPlazaFragment", "horarios de plaza cargados");
+            if (this.plazas != null) {
+                createParkingGrid();
+            }
+        });
+
+
+        viewModel.obtenerPlazas(viewModel.gethoraInicio().getValue().toLocalDate());
+
         setupToolbar();
 
-        String modelo = viewModel.getVehiculoSeleccionado().getValue().getModelo();
-        String matricula = viewModel.getVehiculoSeleccionado().getValue().getMatricula();
-
-        binding.textFecha.setText(Utils.parseSeleccionPlazaFecha(viewModel.gethoraInicio().getValue()));
-        binding.textHorario.setText(Utils.parseSeleccionPlazaHora(viewModel.gethoraInicio().getValue(), viewModel.gethoraFin().getValue()));
-        binding.textVehiculo.setText(modelo + " " + matricula);
-
-        createParkingGrid();
+        Vehiculo vehiculo = viewModel.getVehiculoSeleccionado().getValue();
+        if (vehiculo != null) {
+            binding.textFecha.setText(Utils.parseSeleccionPlazaFecha(viewModel.gethoraInicio().getValue()));
+            binding.textHorario.setText(Utils.parseSeleccionPlazaHora(viewModel.gethoraInicio().getValue(), viewModel.gethoraFin().getValue()));
+            binding.textVehiculo.setText(vehiculo.getModelo() + " " + vehiculo.getMatricula());
+        }
 
         binding.reservarButton.setOnClickListener(v -> confirmReservation());
-
     }
 
     private void setupToolbar() {
@@ -106,14 +108,21 @@ public class SeleccionarPlazaFragment extends Fragment {
         });
     }
 
-
     private void createParkingGrid() {
         GridLayout grid = binding.parkingGrid;
         grid.removeAllViews();
 
-        for (int i = 0; i < spots.length; i++) {
-            for (int j = 0; j < spots[i].length; j++) {
-                ParkingSpot spot = spots[i][j];
+        if (plazas == null) return;
+
+        int total = plazas.size();
+        int rows = (int) Math.ceil(total / 4.0);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < 4; j++) {
+                int index = i * 4 + j;
+                if (index >= plazas.size()) break;
+
+                Plaza spot = plazas.get(index);
                 View spotView = createSpotView(spot);
 
                 int squareSize = (int) (80 * getResources().getDisplayMetrics().density);
@@ -132,7 +141,7 @@ public class SeleccionarPlazaFragment extends Fragment {
         }
     }
 
-    private View createSpotView(ParkingSpot spot) {
+    private View createSpotView(Plaza spot) {
         LinearLayout layout = new LinearLayout(requireContext());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setGravity(Gravity.CENTER);
@@ -140,25 +149,35 @@ public class SeleccionarPlazaFragment extends Fragment {
         layout.setPadding(padding, padding, padding, padding);
 
         TextView iconView = new TextView(requireContext());
-        iconView.setText(spot.icon);
+        iconView.setText(getEmojiForTipo(spot.getTipo()));
         iconView.setTextSize(27);
         iconView.setGravity(Gravity.CENTER);
         iconView.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
 
         layout.addView(iconView);
 
-        // Obtener el tipo de vehículo seleccionado
-        String tipoVehiculo = viewModel.getVehiculoSeleccionado().getValue().getTipoVehiculo().name().toLowerCase();
+        TipoVehiculo tipoVehiculo = viewModel.getVehiculoSeleccionado().getValue().getTipoVehiculo();
+        boolean esCompatible = isCompatible(tipoVehiculo, spot.getTipo());
+        Map<Plaza, HorarioPlaza> horariosMap = viewModel.getHorariosPorPlaza().getValue();
 
-        boolean esCompatible = isCompatible(
-                viewModel.getVehiculoSeleccionado().getValue().getTipoVehiculo(),
-                spot.tipo
-        );
+        boolean isAvailable = false;
+        Log.d("SeleccionarPlazaFragment", "horariosMap: " + horariosMap);
+        if (horariosMap != null && horariosMap.containsKey(spot)) {
+            HorarioPlaza horario = horariosMap.get(spot);
 
-        if (esCompatible && spot.isAvailable) {
+            LocalDateTime inicio = viewModel.gethoraInicio().getValue();
+            LocalDateTime fin = viewModel.gethoraFin().getValue();
+            Duration duracion = Duration.between(inicio, fin);
+
+            isAvailable = horario.estaLibreDurante(inicio, duracion);    // Comprobar disponibilidad
+            Log.d("SeleccionarPlazaFragment", "Plaza " + spot.getId() + " está disponible: " + isAvailable);
+
+        };
+
+        if (esCompatible && isAvailable) {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_available));
             layout.setOnClickListener(v -> selectSpot(v, spot));
-        } else if (esCompatible && !spot.isAvailable) {
+        } else if (esCompatible) {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_occupied));
         } else {
             layout.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_unavailable));
@@ -167,25 +186,37 @@ public class SeleccionarPlazaFragment extends Fragment {
         return layout;
     }
 
-    private boolean isCompatible(TipoVehiculo tipoVehiculo, TipoVehiculo tipoPlaza) {
-        switch (tipoVehiculo) {
+    private String getEmojiForTipo(TipoVehiculo tipo) {
+        switch (tipo) {
             case COCHE:
-                return tipoPlaza == TipoVehiculo.COCHE;
+                return "🚗";
             case ELECTRICO:
-                return tipoPlaza == TipoVehiculo.COCHE || tipoPlaza == TipoVehiculo.ELECTRICO;
-            case DISCAPACITADO:
-                return tipoPlaza == TipoVehiculo.COCHE || tipoPlaza == TipoVehiculo.DISCAPACITADO;
+                return "⚡";
             case MOTO:
-                return tipoPlaza == TipoVehiculo.MOTO;
+                return "🏍️";
+            case DISCAPACITADO:
+                return "♿";
+            default:
+                return "❓";
+        }
+    }
+
+    private boolean isCompatible(TipoVehiculo vehiculo, TipoVehiculo plaza) {
+        switch (vehiculo) {
+            case COCHE:
+                return plaza == COCHE;
+            case ELECTRICO:
+                return plaza == COCHE || plaza == ELECTRICO;
+            case DISCAPACITADO:
+                return plaza == COCHE || plaza == DISCAPACITADO;
+            case MOTO:
+                return plaza == MOTO;
             default:
                 return false;
         }
     }
 
-
-
-
-    private void selectSpot(View view, ParkingSpot spot) {
+    private void selectSpot(View view, Plaza spot) {
         if (currentSelectedView != null) {
             currentSelectedView.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.spot_available));
         }
@@ -195,8 +226,7 @@ public class SeleccionarPlazaFragment extends Fragment {
         selectedSpot = spot;
 
         binding.selectedInfo.setVisibility(View.VISIBLE);
-        binding.selectedDetails.setText("Plaza " + spot.id + " - Tipo: " + spot.tipo +"\nCerca de la entrada principal");
-
+        binding.selectedDetails.setText("Plaza " + spot.getId() + " - Tipo: " + spot.getTipo() + "\nCerca de la entrada principal");
         binding.reservarButton.setEnabled(true);
         binding.reservarButton.setAlpha(1.0f);
     }
@@ -204,78 +234,40 @@ public class SeleccionarPlazaFragment extends Fragment {
     private void confirmReservation() {
         if (selectedSpot != null && getContext() != null) {
 
-            // Recuperamos datos previamente guardados
             Vehiculo vehiculo = viewModel.getVehiculoSeleccionado().getValue();
-            Usuario usuario = null;// TODO: Recuperar usuario actual
+            Usuario usuario = viewModel.getUsuario().getValue();  // ya puedes obtenerlo así
             LocalDateTime inicio = viewModel.gethoraInicio().getValue();
             LocalDateTime fin = viewModel.gethoraFin().getValue();
             Duration duracion = Duration.between(inicio, fin);
 
-            // Crear objeto Plaza
-            Plaza plaza = new Plaza();
-            plaza.setId(selectedSpot.id);
-            plaza.setTipo(selectedSpot.tipo);
-
-            // Crear la reserva
             Reserva reserva = new Reserva(
-                    java.util.UUID.randomUUID().toString(),  // ID aleatorio único
+                    java.util.UUID.randomUUID().toString(),
                     usuario,
                     vehiculo,
                     inicio,
                     duracion,
-                    plaza
+                    selectedSpot
             );
 
             viewModel.reservarPlaza(reserva);
 
-            // Mostrar confirmación
             new AlertDialog.Builder(requireContext())
                     .setTitle("¡Reserva confirmada!")
-                    .setMessage("Plaza: " + selectedSpot.id + "\nFecha: " +
+                    .setMessage("Plaza: " + selectedSpot.getId() + "\nFecha: " +
                                 Utils.parseSeleccionPlazaFecha(inicio) + "\nHorario: " +
                                 Utils.parseSeleccionPlazaHora(inicio, fin))
                     .setPositiveButton("OK", null)
                     .show();
+
             requireActivity().getSupportFragmentManager().popBackStack();
             requireActivity().getSupportFragmentManager().popBackStack();
         }
     }
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null; // Para evitar leaks
-    }
-
-    private static class ParkingSpot {
-        String id;
-        TipoVehiculo tipo;
-        boolean isAvailable;
-        String icon;
-
-        ParkingSpot(String id, TipoVehiculo tipo, boolean isAvailable, String icon) {
-            this.id = id;
-            this.tipo = tipo;
-            this.isAvailable = isAvailable;
-            this.icon = icon;
-        }
-
-        private boolean isCompatible(TipoVehiculo tipoVehiculoStr, TipoVehiculo tipoPlaza) {
-            switch (tipoVehiculoStr) {
-                case COCHE:
-                    return tipoPlaza == COCHE;
-                case ELECTRICO:
-                    return tipoPlaza == COCHE || tipoPlaza == ELECTRICO;
-                case DISCAPACITADO:
-                    return tipoPlaza == COCHE || tipoPlaza == DISCAPACITADO;
-                case MOTO:
-                    return tipoPlaza == MOTO;
-                default:
-                    return false;
-            }
-        }
-
-
+        binding = null;
     }
 }
+

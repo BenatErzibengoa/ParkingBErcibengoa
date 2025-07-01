@@ -2,6 +2,7 @@ package com.lksnext.parkingbercibengoa.data;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -13,22 +14,28 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.lksnext.parkingbercibengoa.data.firebase.HorarioPlazaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.VehiculoDTO;
 import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.domain.CallbackList;
+import com.lksnext.parkingbercibengoa.domain.HorarioPlaza;
 import com.lksnext.parkingbercibengoa.domain.LoginCallback;
+import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
+import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class DataRepository {
-    private static final String SERVER_ERROR = "server_error";  // Compliant
+    private static final String SERVER_ERROR = "server_error";
     private static DataRepository instance;
     private final FirebaseAuth mauth = FirebaseAuth.getInstance();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -191,6 +198,76 @@ public class DataRepository {
                 });
     }
 
+    public void obtenerPlazas(CallbackList<Plaza> callback) {
+        db.collection("plazas")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Plaza> plazas = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String id = doc.getString("id");
+                        String tipoStr = doc.getString("tipo");
+                        if (id != null && tipoStr != null) {
+                            Plaza plaza = new Plaza();
+                            plaza.setId(id);
+                            try {
+                                plaza.setTipo(TipoVehiculo.valueOf(tipoStr.toUpperCase()));
+                            } catch (IllegalArgumentException e) {
+                                Log.w("DataRepository", "TipoVehiculo desconocido: " + tipoStr);
+                                continue;  // Saltar esta plaza
+                            }
+                            plazas.add(plaza);
+                        }
+                    }
+                    callback.onSuccess(plazas);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void getOrCreateHorarioPlaza(Plaza plaza, LocalDate dia, LoginCallback<HorarioPlaza> callback) {
+        String docId = dia.toString(); // ID --> fecha
+
+        db.collection("plazas")
+                .document(plaza.getId())
+                .collection("horarios")
+                .document(docId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        if (data != null) {
+                            HorarioPlaza horario = HorarioPlazaDTO.fromMap(data);
+                            callback.onSuccess(horario);
+                        } else {
+                            callback.onFailure("Documento vacío");
+                        }
+                    } else {
+                        // Crear nuevo horario si no existe
+                        HorarioPlaza nuevo = new HorarioPlaza(plaza, dia);
+                        Map<String, Object> map = HorarioPlazaDTO.toMap(nuevo);
+
+                        db.collection("plazas")
+                                .document(plaza.getId())
+                                .collection("horarios")
+                                .document(docId)
+                                .set(map)
+                                .addOnSuccessListener(aVoid -> callback.onSuccess(nuevo))
+                                .addOnFailureListener(e -> {
+                                    e.printStackTrace();
+                                    callback.onFailure("Error al crear horario: " + e.getMessage());
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                    callback.onFailure("Error al obtener horario: " + e.getMessage());
+                });
+    }
+
+
+
+
 
 
 
@@ -227,12 +304,6 @@ public class DataRepository {
 
         return SERVER_ERROR;
     }
-
-    private List<Vehiculo> getVehiculos(Usuario usuario){
-        return new ArrayList<Vehiculo>();
-    }
-
-
 
 }
 

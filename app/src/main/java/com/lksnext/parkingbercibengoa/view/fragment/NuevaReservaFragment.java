@@ -166,8 +166,6 @@ public class NuevaReservaFragment extends Fragment {
                 Utils.showError("La hora de fin debe ser después de la hora de inicio", binding.errorText);
                 return;
             }
-            Duration duracion = Duration.between(inicio, fin);
-
             viewModel.setHoraInicio(inicio);
             viewModel.setHoraFin(fin);
 
