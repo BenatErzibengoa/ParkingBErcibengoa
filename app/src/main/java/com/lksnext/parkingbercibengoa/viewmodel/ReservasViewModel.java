@@ -1,13 +1,21 @@
 package com.lksnext.parkingbercibengoa.viewmodel;
 
+import static androidx.lifecycle.AndroidViewModel_androidKt.getApplication;
+
+import android.app.Application;
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
+import com.lksnext.parkingbercibengoa.domain.CallbackList;
 import com.lksnext.parkingbercibengoa.domain.Plaza;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
@@ -21,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ReservasViewModel extends ViewModel {
+public class ReservasViewModel extends AndroidViewModel {
 
     private MutableLiveData<List<Reserva>> reservas = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Vehiculo>> vehiculos = new MutableLiveData<>();
@@ -32,9 +40,11 @@ public class ReservasViewModel extends ViewModel {
 
     private MutableLiveData<LocalDateTime> horaFin = new MutableLiveData<>();
 
+    private final MutableLiveData<String> mensajeError = new MutableLiveData<>();
 
 
-    private MutableLiveData<Usuario> usuarioActual = new MutableLiveData<>();
+
+
 
     public LiveData<List<Reserva>> getReservas() {
         return reservas;
@@ -51,13 +61,18 @@ public class ReservasViewModel extends ViewModel {
     public LiveData<LocalDateTime> gethoraInicio() {return horaInicio;}
     public LiveData<LocalDateTime> gethoraFin() {return horaFin;}
 
+    public LiveData<String> getMensajeError() {return mensajeError;}
 
 
-    public LiveData<Usuario> getUsuarioLiveData() {
-        return usuarioActual;
+
+    public ReservasViewModel(@NonNull Application application) {
+        super(application);
     }
 
     public void cargarReservasDelUsuario() {
+        if (reservas.getValue() != null && !reservas.getValue().isEmpty()) {
+            return; // si los vehiculos han sido cargados, no hacer nada
+        }
         Vehiculo vehiculo1 = new Vehiculo("9359MPK", "Opel Zafira", TipoVehiculo.COCHE);
         Vehiculo vehiculo2 = new Vehiculo("5340CCB", "Toyota Yaris", TipoVehiculo.ELECTRICO);
         Vehiculo vehiculo3 = new Vehiculo("3420ATB", "Ford Fiesta", TipoVehiculo.DISCAPACITADO);
@@ -73,9 +88,23 @@ public class ReservasViewModel extends ViewModel {
         Reserva reserva7 = new Reserva("7", null, vehiculo3, LocalDateTime.now().plusDays(6).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
         Reserva reserva8 = new Reserva("8", null, vehiculo3, LocalDateTime.now().plusDays(7).plusHours(2), Duration.of(1, ChronoUnit.HOURS), new Plaza("1", TipoVehiculo.DISCAPACITADO));
 
-        ArrayList<Reserva> listaReservas = new ArrayList<>();
-        listaReservas.addAll(Arrays.asList(reserva1, reserva2, reserva3, reserva4, reserva5, reserva6, reserva7, reserva8));
-        reservas.setValue(listaReservas);
+        Context context = getApplication().getApplicationContext();
+        SessionManager sessionManager = new SessionManager(context);
+        Usuario usuario = sessionManager.getUsuario();
+        DataRepository.getInstance().obtenerReservasUsuario(usuario.getId(), new CallbackList<Reserva>() {
+            @Override
+            public void onSuccess(List<Reserva> lista) {
+                reservas.setValue(lista);
+            }
+            @Override
+            public void onFailure(String error) {
+                mensajeError.setValue(error);
+            }
+        });
+
+        //ArrayList<Reserva> listaReservas = new ArrayList<>();
+        //listaReservas.addAll(Arrays.asList(reserva1, reserva2, reserva3, reserva4, reserva5, reserva6, reserva7, reserva8));
+        //reservas.setValue(listaReservas);
     }
 
     public void cargarVehiculos() {

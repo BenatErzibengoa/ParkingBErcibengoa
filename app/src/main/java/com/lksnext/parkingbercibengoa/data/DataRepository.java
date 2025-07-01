@@ -14,7 +14,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
+import com.lksnext.parkingbercibengoa.data.firebase.VehiculoDTO;
 import com.lksnext.parkingbercibengoa.domain.Callback;
+import com.lksnext.parkingbercibengoa.domain.CallbackList;
 import com.lksnext.parkingbercibengoa.domain.LoginCallback;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.Usuario;
@@ -64,6 +66,7 @@ public class DataRepository {
                     if (documentSnapshot.exists()) {
                         Map<String, Object> data = documentSnapshot.getData();
                         Usuario usuario = UsuarioDTO.fromMap(data);
+                        usuario.setId(uid);
                         callback.onSuccess(usuario);
                     } else {
                         callback.onFailure("ERROR_USER_NOT_FOUND");
@@ -111,6 +114,45 @@ public class DataRepository {
                     }
                 });
     }
+
+    public void obtenerVehiculosUsuario(String uid, CallbackList<Vehiculo> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .collection("vehiculos")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Vehiculo> listaVehiculos = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Vehiculo v = VehiculoDTO.fromMap(doc.getData());
+                        listaVehiculos.add(v);
+                    }
+                    callback.onSuccess(listaVehiculos);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void obtenerReservasUsuario(String uid, CallbackList<Reserva> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .collection("reservas")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Reserva> listaReservas = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Reserva r = ReservaDTO.fromMap(doc.getData());
+                        listaReservas.add(r);
+                    }
+                    callback.onSuccess(listaReservas);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
 
 
 

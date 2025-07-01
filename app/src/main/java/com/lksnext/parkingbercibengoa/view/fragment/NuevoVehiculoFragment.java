@@ -42,7 +42,7 @@ public class NuevoVehiculoFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = ReservasViewModelFactory.getSharedInstance();
+        viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
 
         binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
         binding.crearVehiculoButton.setOnClickListener(v -> crearVehiculo());

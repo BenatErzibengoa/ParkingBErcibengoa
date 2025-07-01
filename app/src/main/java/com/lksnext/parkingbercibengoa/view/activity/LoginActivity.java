@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
                 showError("La contraseña debe contener al menos 6 caracteres", binding.loginErrorText);
             } else{
                 binding.loginErrorText.setVisibility(GONE);
-                loginViewModel.loginUser(email, password);
+                loginViewModel.loginUser(this,email, password);
             }
         });
 

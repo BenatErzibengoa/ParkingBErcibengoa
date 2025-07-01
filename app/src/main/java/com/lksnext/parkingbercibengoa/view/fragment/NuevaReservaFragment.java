@@ -1,5 +1,7 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
+import static androidx.lifecycle.AndroidViewModel_androidKt.getApplication;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,7 +53,7 @@ public class NuevaReservaFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = ReservasViewModelFactory.getSharedInstance();
+        viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         observeViewModel();
         viewModel.cargarVehiculos();
 

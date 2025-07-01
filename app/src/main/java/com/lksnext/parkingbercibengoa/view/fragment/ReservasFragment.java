@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -35,7 +36,7 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     @Override
     protected ReservasViewModel getViewModel() {
         if (viewModel == null) {
-            viewModel = ReservasViewModelFactory.getSharedInstance();
+            viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         }
         return viewModel;
     }
@@ -44,6 +45,12 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     protected void observarReservas() {
         getViewModel().getReservas().observe(getViewLifecycleOwner(), reservas -> {
             mostrarReservas(reservas, false);
+        });
+
+        getViewModel().getMensajeError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(requireContext(), "Error al cargar reservas: " + error, Toast.LENGTH_SHORT).show();
+            }
         });
 
         if (getViewModel().getReservas().getValue() == null || getViewModel().getReservas().getValue().isEmpty()) {
