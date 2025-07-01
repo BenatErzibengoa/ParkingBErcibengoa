@@ -186,18 +186,6 @@ public class DataRepository {
                 });
     }
 
-    public void guardarReserva(Reserva reserva) {
-        db.collection("reservas")
-                .document(reserva.getId())
-                .set(ReservaDTO.toMap(reserva))
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("DataRepository","Reserva guardada correctamente.");
-                })
-                .addOnFailureListener(e -> {
-                    Log.d("DataRepository","Error al guardar la reserva: " + e.getMessage());
-                });
-    }
-
     public void obtenerPlazas(CallbackList<Plaza> callback) {
         db.collection("plazas")
                 .get()
@@ -264,6 +252,17 @@ public class DataRepository {
                     callback.onFailure("Error al obtener horario: " + e.getMessage());
                 });
     }
+
+    public void guardarReserva(Usuario usuario, Reserva reserva, Callback callback) {
+        db.collection("usuarios")
+                .document(usuario.getId())
+                .collection("reservas")
+                .document(reserva.getId())
+                .set(ReservaDTO.toMap(reserva))
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure("Error al guardar reserva en usuario: " + e.getMessage()));
+    }
+
 
 
 

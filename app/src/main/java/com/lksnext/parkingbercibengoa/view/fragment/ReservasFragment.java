@@ -2,6 +2,7 @@ package com.lksnext.parkingbercibengoa.view.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
+import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 

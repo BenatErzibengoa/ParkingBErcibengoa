@@ -83,6 +83,8 @@ public class ReservasViewModel extends AndroidViewModel {
             @Override
             public void onSuccess(List<Reserva> lista) {
                 reservas.setValue(lista);
+
+                Log.d("ReservasViewModel", "Reservas cargadas correctamente: " + lista.toString());
             }
             @Override
             public void onFailure(String error) {
@@ -124,26 +126,38 @@ public class ReservasViewModel extends AndroidViewModel {
 
                         nuevaLista.add(nuevoVehiculo);
                         vehiculos.setValue(nuevaLista);
-                        Log.d("NuevoVehiculoFragment", "Vehículo guardado correctamente");
+                        Log.d("ReservasViewModel", "Vehículo guardado correctamente");
                     }
 
                     @Override
                     public void onFailure(String message) {
-                        Log.e("NuevoVehiculoFragment", "Error al guardar el vehículo: " + message);
+                        Log.e("ReservasViewModel", "Error al guardar el vehículo: " + message);
                         errorAñadirVehiculo.setValue(message);
                     }
         });
     }
 
     public void reservarPlaza(Reserva reserva) {
-        //DataRepository.getInstance().guardarReserva(reserva);
-        List<Reserva> listaActual = reservas.getValue();
-        ArrayList<Reserva> nuevaLista = new ArrayList<>();
-        if (listaActual != null) {
-            nuevaLista.addAll(listaActual);
-        }
-        nuevaLista.add(reserva);
-        reservas.setValue(nuevaLista);
+        DataRepository.getInstance().guardarReserva(usuario.getValue(), reserva, new Callback() {
+            @Override
+            public void onSuccess() {
+                List<Reserva> listaActual = reservas.getValue();
+                List<Reserva> nuevaLista = new ArrayList<>();
+
+                if (listaActual != null) {
+                    nuevaLista.addAll(listaActual);
+                }
+                nuevaLista.add(reserva);
+                reservas.setValue(nuevaLista);
+                Log.d("ReservasViewModel", "Reserva guardada correctamente");
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log.e("ReservasViewModel", "Error al guardar el reserva: " + message);
+                errorAñadirVehiculo.setValue(message);
+            }
+        });
     }
 
     public void obtenerPlazas(LocalDate dia) {

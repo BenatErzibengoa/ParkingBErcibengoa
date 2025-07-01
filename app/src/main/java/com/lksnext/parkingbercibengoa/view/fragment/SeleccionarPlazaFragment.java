@@ -61,7 +61,6 @@ public class SeleccionarPlazaFragment extends Fragment {
         viewModel.getPlazas().observe(getViewLifecycleOwner(), plazas -> {
             Log.d("SeleccionarPlazaFragment", "plazas cargadas ");
             this.plazas = plazas;
-            // Sólo crear el grid si los horarios también están listos
             Map<Plaza, HorarioPlaza> horarios = viewModel.getHorariosPorPlaza().getValue();
             if (horarios != null) {
                 createParkingGrid();
@@ -235,7 +234,7 @@ public class SeleccionarPlazaFragment extends Fragment {
         if (selectedSpot != null && getContext() != null) {
 
             Vehiculo vehiculo = viewModel.getVehiculoSeleccionado().getValue();
-            Usuario usuario = viewModel.getUsuario().getValue();  // ya puedes obtenerlo así
+            Usuario usuario = viewModel.getUsuario().getValue();
             LocalDateTime inicio = viewModel.gethoraInicio().getValue();
             LocalDateTime fin = viewModel.gethoraFin().getValue();
             Duration duracion = Duration.between(inicio, fin);
