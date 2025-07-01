@@ -115,6 +115,7 @@ public class ReservasViewModel extends AndroidViewModel {
         DataRepository.getInstance().obtenerVehiculosUsuario(usuario.getValue().getId(), new CallbackList<Vehiculo>() {
             @Override
             public void onSuccess(List<Vehiculo> lista) {
+                Log.d("ReservasViewModel", "Vehiculos cargados correctamente: " + lista.toString());
                 vehiculos.postValue(new ArrayList<>(lista));
             }
             @Override

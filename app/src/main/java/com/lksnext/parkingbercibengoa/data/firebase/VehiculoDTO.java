@@ -19,7 +19,7 @@ public class VehiculoDTO {
     public static Vehiculo fromMap(Map<String, Object> map) {
         Vehiculo vehiculo = new Vehiculo();
         vehiculo.setMatricula((String) map.get("matricula"));
-        vehiculo.setModelo((String) map.get("marca"));
+        vehiculo.setModelo((String) map.get("modelo"));
         vehiculo.setTipoVehiculo(TipoVehiculo.valueOf((String) map.get("tipoVehiculo")));
         return vehiculo;
     }
