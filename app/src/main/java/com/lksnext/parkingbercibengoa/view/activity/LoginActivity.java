@@ -11,14 +11,18 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.FirebaseApp;
+import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.ActivityLoginBinding;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        FirebaseApp.initializeApp(this);
         super.onCreate(savedInstanceState);
         ActivityLoginBinding binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -41,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
                 showError("La contraseña debe contener al menos 6 caracteres", binding.loginErrorText);
             } else{
                 binding.loginErrorText.setVisibility(GONE);
-                loginViewModel.loginUser(email, password);
+                loginViewModel.loginUser(this,email, password);
             }
         });
 

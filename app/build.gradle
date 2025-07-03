@@ -53,10 +53,12 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.firebase:firebase-auth:23.2.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-android:2.9.0'
     implementation 'com.google.firebase:firebase-inappmessaging:21.0.2'
     implementation 'com.google.android.material:material:1.11.0' //timePicker
+    implementation 'androidx.gridlayout:gridlayout:1.0.0' //grid para view plazas
+    implementation 'com.google.code.gson:gson:2.10.1'   //Para cargar usuario con vehiculos y reservas
+
 
 
     testImplementation 'junit:junit:4.+'

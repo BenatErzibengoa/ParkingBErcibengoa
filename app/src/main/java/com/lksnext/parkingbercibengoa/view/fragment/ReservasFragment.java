@@ -6,17 +6,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-
+import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
-import com.lksnext.parkingbercibengoa.view.activity.NuevaReservaActivity;
+import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
@@ -39,31 +38,37 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     @Override
     protected ReservasViewModel getViewModel() {
         if (viewModel == null) {
-            viewModel = ReservasViewModelFactory.getSharedInstance();
+            viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         }
         return viewModel;
     }
 
-    //Necesario para visualizar las nuevas reservas creadas
-    private ActivityResultLauncher<Intent> nuevaReservaLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    getViewModel().cargarReservasDelUsuario();
-                }
-            }
-    );
     @Override
     protected void observarReservas() {
-        getViewModel().getReservas().observe(getViewLifecycleOwner(),
-                reservas -> mostrarReservas(reservas, false)); // orden ascendente
-        getViewModel().cargarReservasDelUsuario();
+        getViewModel().getReservas().observe(getViewLifecycleOwner(), reservas -> {
+            mostrarReservas(reservas, false);
+        });
+
+        getViewModel().getErrorCargarReservas().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(requireContext(), "Error al cargar reservas: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        if (getViewModel().getReservas().getValue() == null || getViewModel().getReservas().getValue().isEmpty()) {
+            getViewModel().cargarReservasDelUsuario();
+        }
     }
 
     @Override
     protected void onExtraViewReady() {
         binding.btnNuevaReserva.setOnClickListener(v -> {
-            nuevaReservaLauncher.launch(new Intent(requireContext(), NuevaReservaActivity.class));
+            NuevaReservaFragment nuevaReservaFragment = new NuevaReservaFragment();
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.flFragment, nuevaReservaFragment) // flFragment es el contenedor de la Main Activity
+                    .addToBackStack(null) // Boton back
+                    .commit();
         });
     }
 }

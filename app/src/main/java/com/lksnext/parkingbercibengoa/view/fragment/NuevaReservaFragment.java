@@ -1,22 +1,26 @@
-package com.lksnext.parkingbercibengoa.view.activity;
+package com.lksnext.parkingbercibengoa.view.fragment;
+
+import static androidx.lifecycle.AndroidViewModel_androidKt.getApplication;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
-import com.lksnext.parkingbercibengoa.databinding.ActivityNuevaReservaBinding;
-import com.lksnext.parkingbercibengoa.domain.Plaza;
+import com.lksnext.parkingbercibengoa.databinding.FragmentNuevaReservaBinding;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Usuario;
@@ -29,43 +33,50 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class NuevaReservaActivity extends AppCompatActivity {
+public class NuevaReservaFragment extends Fragment {
 
-    ActivityNuevaReservaBinding binding;
+    private FragmentNuevaReservaBinding binding;
     private ReservasViewModel viewModel;
 
     private ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
 
-    Usuario usuarioActual = null;
+    private Usuario usuarioActual = null;
     private Vehiculo vehiculoSeleccionado = null;
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityNuevaReservaBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        viewModel = ReservasViewModelFactory.getSharedInstance();
-        observeViewModel();
-        viewModel.cargarUsuario(this);
-        viewModel.cargarVehiculos();
-
-        binding.backButton.setOnClickListener(v -> finish());
-
-        binding.fechaText.setOnClickListener(v -> {showCalendar();});
-        binding.horaComienzoText.setOnClickListener(v -> {
-            showTimePicker(binding.horaComienzoText);});
-        binding.horaFinText.setOnClickListener(v -> { showTimePicker(binding.horaFinText);});
-        binding.vehiculoText.setOnClickListener(v -> { showVehicleSelector();});
-
-        binding.reservarButton.setOnClickListener(v -> {reservar();});
-
-
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentNuevaReservaBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
-    private void showCalendar(){
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
+        observeViewModel();
+        viewModel.cargarVehiculos();
+
+        binding.backButton.setOnClickListener(v -> {
+            // Volver atrás en la pila de fragments
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
+
+        binding.fechaText.setOnClickListener(v -> showCalendar());
+        binding.horaComienzoText.setOnClickListener(v -> showTimePicker(binding.horaComienzoText));
+        binding.horaFinText.setOnClickListener(v -> showTimePicker(binding.horaFinText));
+        binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
+        binding.reservarButton.setOnClickListener(v -> buscarPlazas());
+    }
+
+    //Para que cuando vuelva de NuevoVehiculo se cargue el nuevo coche
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.cargarVehiculos();
+    }
+
+    private void showCalendar() {
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Selecciona una fecha")
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
@@ -81,9 +92,8 @@ public class NuevaReservaActivity extends AppCompatActivity {
             binding.fechaText.setText(selectedDate);
         });
 
-        datePicker.show(getSupportFragmentManager(), "DATE_PICKER");
+        datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
-
 
     private void showTimePicker(TextInputEditText textInputEditText) {
         MaterialTimePicker picker = new MaterialTimePicker.Builder()
@@ -93,7 +103,7 @@ public class NuevaReservaActivity extends AppCompatActivity {
                 .setTitleText("Seleccione la hora")
                 .build();
 
-        picker.show(getSupportFragmentManager(), "time_picker");
+        picker.show(getParentFragmentManager(), "time_picker");
 
         picker.addOnPositiveButtonClickListener(v -> {
             String formattedTime = String.format("%02d:%02d", picker.getHour(), picker.getMinute());
@@ -102,10 +112,13 @@ public class NuevaReservaActivity extends AppCompatActivity {
     }
 
     private void showVehicleSelector() {
-        ListPopupWindow listPopupWindow = new ListPopupWindow(this);
+        Log.d("NuevaReserva", listaVehiculos.toString());
+        Log.d("NuevaReserva", viewModel.getVehiculos().getValue().toString());
+
+        ListPopupWindow listPopupWindow = new ListPopupWindow(requireContext());
 
         // Crear adaptador para el dropdown
-        ArrayAdapter<Vehiculo> adapter = new ArrayAdapter<>(this,
+        ArrayAdapter<Vehiculo> adapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_dropdown_item_1line, listaVehiculos);
         listPopupWindow.setAdapter(adapter);
         listPopupWindow.setAnchorView(binding.vehiculoText);
@@ -114,20 +127,27 @@ public class NuevaReservaActivity extends AppCompatActivity {
 
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             Vehiculo seleccionado = adapter.getItem(position);
-            if (seleccionado.getMarca().equals("➕ Nuevo vehículo")) {
-                // startActivity(new Intent(this, NuevaReservaActivity.class));
+            if (seleccionado != null && "➕ Nuevo vehículo".equals(seleccionado.getModelo())) {
+                Fragment nuevoVehiculoFragment = new NuevoVehiculoFragment();
+                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                transaction.replace(R.id.flFragment, nuevoVehiculoFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+                listPopupWindow.dismiss();
                 return;
             }
-            vehiculoSeleccionado = seleccionado;
-
-            // Mostrar el modelo en pantalla
-            binding.vehiculoText.setText(seleccionado.getMarca());
+            if (seleccionado != null) {
+                binding.vehiculoText.setText(seleccionado.getModelo());
+                vehiculoSeleccionado = seleccionado;
+                viewModel.setVehiculoSeleccionado(vehiculoSeleccionado);
+            }
             listPopupWindow.dismiss();
         });
         listPopupWindow.show();
     }
 
-    private void reservar() {
+    private void buscarPlazas() {
         String fecha = binding.fechaText.getText().toString().trim();
         String horaInicio = binding.horaComienzoText.getText().toString().trim();
         String horaFin = binding.horaFinText.getText().toString().trim();
@@ -146,31 +166,23 @@ public class NuevaReservaActivity extends AppCompatActivity {
                 Utils.showError("La hora de fin debe ser después de la hora de inicio", binding.errorText);
                 return;
             }
+            viewModel.setHoraInicio(inicio);
+            viewModel.setHoraFin(fin);
 
-            Duration duracion = Duration.between(inicio, fin);
-
-            Reserva reserva = new Reserva(Utils.generarUUID(), usuarioActual, vehiculo, inicio, duracion, null);
-
-            viewModel.reservarPlaza(reserva);
-
-            Log.d("NuevaReservaActivity", "Reserva enviada al ViewModel");
-
-            new AlertDialog.Builder(this)
-                    .setTitle("Reserva confirmada")
-                    .setMessage("Tu reserva ha sido registrada correctamente.")
-                    .setPositiveButton("OK", (dialog, which) -> {
-                        finish();
-                    })
-                    .show();
-
+            Fragment seleccionarPlazaFragment = new SeleccionarPlazaFragment();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.flFragment, seleccionarPlazaFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         } catch (Exception e) {
-            Utils.showError("Error al procesar la reserva: " + e.getMessage(), binding.errorText);
-            Log.e("NuevaReservaActivity", "Excepción general", e);
+            Utils.showError("Error al buscar plazas: " + e.getMessage(), binding.errorText);
+            Log.e("NuevaReservaFragment", "Excepción general", e);
         }
     }
+
     private void observeViewModel() {
         /*
-        viewModel.getUsuarioLiveData().observe(this, usuario -> {
+        viewModel.getUsuarioLiveData().observe(getViewLifecycleOwner(), usuario -> {
             if (usuario == null) {
                 Utils.showError("Usuario no encontrado", binding.errorText);
             } else {
@@ -178,7 +190,7 @@ public class NuevaReservaActivity extends AppCompatActivity {
             }
         });
         */
-        viewModel.getVehiculos().observe(this, vehiculos -> {
+        viewModel.getVehiculos().observe(getViewLifecycleOwner(), vehiculos -> {
             if (vehiculos != null) {
                 listaVehiculos.clear();
                 listaVehiculos.addAll(vehiculos);
@@ -186,7 +198,4 @@ public class NuevaReservaActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
 }

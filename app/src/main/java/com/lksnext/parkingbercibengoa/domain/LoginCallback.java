@@ -1,6 +1,6 @@
 package com.lksnext.parkingbercibengoa.domain;
 
-public interface LoginCallback {
-    void onSuccess(Usuario usuario);
+public interface LoginCallback<T> {
+    void onSuccess(T user);
     void onFailure(String errorCode);
 }

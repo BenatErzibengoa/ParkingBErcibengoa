@@ -2,6 +2,7 @@ package com.lksnext.parkingbercibengoa.data;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -10,11 +11,35 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.lksnext.parkingbercibengoa.data.firebase.HorarioPlazaDTO;
+import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
+import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
+import com.lksnext.parkingbercibengoa.data.firebase.VehiculoDTO;
 import com.lksnext.parkingbercibengoa.domain.Callback;
+import com.lksnext.parkingbercibengoa.domain.CallbackList;
+import com.lksnext.parkingbercibengoa.domain.HorarioPlaza;
+import com.lksnext.parkingbercibengoa.domain.LoginCallback;
+import com.lksnext.parkingbercibengoa.domain.Plaza;
+import com.lksnext.parkingbercibengoa.domain.Reserva;
+import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
+import com.lksnext.parkingbercibengoa.domain.Usuario;
+import com.lksnext.parkingbercibengoa.domain.Vehiculo;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class DataRepository {
-
+    private static final String SERVER_ERROR = "server_error";
     private static DataRepository instance;
+    private final FirebaseAuth mauth = FirebaseAuth.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
     private DataRepository(){
     }
@@ -26,11 +51,12 @@ public class DataRepository {
         return instance;
     }
 
-    public void login(String email, String pass, Callback callback){
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, pass)
+    public void login(String email, String pass, LoginCallback callback){
+        mauth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        callback.onSuccess();
+                        String uid = mauth.getCurrentUser().getUid();
+                        obtenerUsuario(uid, callback);
                     } else {
                         Exception exception = task.getException();
                         String errorCode = parseFirebaseError(exception);
@@ -39,25 +65,34 @@ public class DataRepository {
                 });
     }
 
-    public void register(String fullName, String email, String pass, Callback callback){
+    public void register(String fullname, String email, String contraseña, Callback callback) {
         FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(email, pass)
+                .createUserWithEmailAndPassword(email, contraseña)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+                        if (firebaseUser == null) {
+                            callback.onFailure("USER_NULL_ERROR");
+                            return;
+                        }
 
                         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(fullName)
+                                .setDisplayName(fullname)
                                 .build();
 
-                        user.updateProfile(profileUpdates)
-                                .addOnCompleteListener(profileUpdateTask -> {
-                                    if (profileUpdateTask.isSuccessful()) {
-                                        callback.onSuccess();
-                                    } else {
-                                        callback.onFailure("server_error");
-                                    }
-                                });
+                        firebaseUser.updateProfile(profileUpdates).addOnCompleteListener(profileUpdateTask -> {
+                            if (profileUpdateTask.isSuccessful()) {
+                                FirebaseFirestore.getInstance()
+                                        .collection("usuarios")
+                                        .document(firebaseUser.getUid())  // es importante que sea UID y no el email, si no puede dar error
+                                        .set(UsuarioDTO.toMap(new Usuario(fullname, email)))
+                                        .addOnSuccessListener(aVoid -> callback.onSuccess())
+                                        .addOnFailureListener(e -> callback.onFailure("DB_WRITE_ERROR"));
+                            } else {
+                                callback.onFailure("PROFILE_UPDATE_ERROR");
+                            }
+                        });
                     } else {
                         Exception exception = task.getException();
                         String errorCode = parseFirebaseError(exception);
@@ -67,7 +102,7 @@ public class DataRepository {
     }
 
     public void changePassword(String email, Callback callback){
-        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+        mauth.getInstance().sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         callback.onSuccess();
@@ -78,6 +113,164 @@ public class DataRepository {
                     }
                 });
     }
+
+    public void obtenerUsuario(String uid, LoginCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        Usuario usuario = UsuarioDTO.fromMap(data);
+                        usuario.setId(uid);
+                        callback.onSuccess(usuario);
+                    } else {
+                        callback.onFailure("ERROR_USER_NOT_FOUND");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void obtenerVehiculosUsuario(String uid, CallbackList<Vehiculo> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .collection("vehiculos")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Vehiculo> listaVehiculos = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Vehiculo v = VehiculoDTO.fromMap(doc.getData());
+                        listaVehiculos.add(v);
+                    }
+                    callback.onSuccess(listaVehiculos);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void añadirVehiculoAUsuario(Usuario usuario, Vehiculo vehiculo, Callback callback) {
+        if (usuario == null || usuario.getId() == null) {
+            callback.onFailure("Usuario inválido");
+            return;
+        }
+        db.collection("usuarios")
+                .document(usuario.getId())
+                .collection("vehiculos")
+                .document(vehiculo.getMatricula())  // matricula como id del vehiculo
+                .set(VehiculoDTO.toMap(vehiculo))
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void obtenerReservasUsuario(String uid, CallbackList<Reserva> callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("usuarios")
+                .document(uid)
+                .collection("reservas")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Reserva> listaReservas = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Reserva r = ReservaDTO.fromMap(doc.getData());
+                        listaReservas.add(r);
+                    }
+                    callback.onSuccess(listaReservas);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void obtenerPlazas(CallbackList<Plaza> callback) {
+        db.collection("plazas")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Plaza> plazas = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String id = doc.getString("id");
+                        String tipoStr = doc.getString("tipo");
+                        if (id != null && tipoStr != null) {
+                            Plaza plaza = new Plaza();
+                            plaza.setId(id);
+                            try {
+                                plaza.setTipo(TipoVehiculo.valueOf(tipoStr.toUpperCase()));
+                            } catch (IllegalArgumentException e) {
+                                Log.w("DataRepository", "TipoVehiculo desconocido: " + tipoStr);
+                                continue;  // Saltar esta plaza
+                            }
+                            plazas.add(plaza);
+                        }
+                    }
+                    callback.onSuccess(plazas);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e.getMessage());
+                });
+    }
+
+    public void getOrCreateHorarioPlaza(Plaza plaza, LocalDate dia, LoginCallback<HorarioPlaza> callback) {
+        String docId = dia.toString(); // ID --> fecha
+
+        db.collection("plazas")
+                .document(plaza.getId())
+                .collection("horarios")
+                .document(docId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        if (data != null) {
+                            HorarioPlaza horario = HorarioPlazaDTO.fromMap(data);
+                            callback.onSuccess(horario);
+                        } else {
+                            callback.onFailure("Documento vacío");
+                        }
+                    } else {
+                        // Crear nuevo horario si no existe
+                        HorarioPlaza nuevo = new HorarioPlaza(plaza, dia);
+                        Map<String, Object> map = HorarioPlazaDTO.toMap(nuevo);
+
+                        db.collection("plazas")
+                                .document(plaza.getId())
+                                .collection("horarios")
+                                .document(docId)
+                                .set(map)
+                                .addOnSuccessListener(aVoid -> callback.onSuccess(nuevo))
+                                .addOnFailureListener(e -> {
+                                    e.printStackTrace();
+                                    callback.onFailure("Error al crear horario: " + e.getMessage());
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                    callback.onFailure("Error al obtener horario: " + e.getMessage());
+                });
+    }
+
+    public void guardarReserva(Usuario usuario, Reserva reserva, Callback callback) {
+        db.collection("usuarios")
+                .document(usuario.getId())
+                .collection("reservas")
+                .document(reserva.getId())
+                .set(ReservaDTO.toMap(reserva))
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure("Error al guardar reserva en usuario: " + e.getMessage()));
+    }
+
+
+
+
+
+
+
+
+
 
     private String parseFirebaseError(Exception exception) {
         if (exception == null) return "unknown_error";
@@ -100,7 +293,7 @@ public class DataRepository {
 
         if (exception instanceof FirebaseAuthException) {
             String errorCode = ((FirebaseAuthException) exception).getErrorCode();
-            return errorCode != null ? errorCode : "server_error";
+            return errorCode != null ? errorCode : SERVER_ERROR;
         }
 
         String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
@@ -108,10 +301,8 @@ public class DataRepository {
             return "no_connection";
         }
 
-        return "server_error";
+        return SERVER_ERROR;
     }
-
-
 
 }
 

@@ -25,9 +25,6 @@
         <activity
             android:name="com.lksnext.parkingbercibengoa.view.activity.PasswordActivity"
             android:exported="false" />
-        <activity
-            android:name="com.lksnext.parkingbercibengoa.view.activity.NuevaReservaActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

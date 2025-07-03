@@ -22,8 +22,7 @@ public class RegisterViewModel extends ViewModel {
     }
 
     public void registerUser(String fullName, String email, String password) {
-        Usuario usuario = new Usuario(fullName, email, password);
-        DataRepository.getInstance().register(usuario, new Callback() {
+        DataRepository.getInstance().register(fullName, email, password, new Callback() {
             @Override
             public void onSuccess() {
                 registered.setValue(Boolean.TRUE);

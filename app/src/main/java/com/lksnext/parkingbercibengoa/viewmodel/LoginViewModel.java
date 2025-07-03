@@ -1,9 +1,12 @@
 package com.lksnext.parkingbercibengoa.viewmodel;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
 import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.domain.LoginCallback;
@@ -11,7 +14,6 @@ import com.lksnext.parkingbercibengoa.domain.Usuario;
 
 public class LoginViewModel extends ViewModel {
 
-    private MutableLiveData<Usuario> usuarioLiveData = new MutableLiveData<>();
     MutableLiveData<Boolean> logged = new MutableLiveData<>(null);
     MutableLiveData<String> error = new MutableLiveData<>(null);
 
@@ -23,11 +25,12 @@ public class LoginViewModel extends ViewModel {
         return error;
     }
 
-    public void loginUser(String email, String password) {
-        DataRepository.getInstance().login(email, password, new LoginCallback() {
+    public void loginUser(Context context, String email, String password) {
+        DataRepository.getInstance().login(email, password, new LoginCallback<Usuario>() {
             @Override
             public void onSuccess(Usuario usuario) {
-                usuarioLiveData.postValue(usuario);
+                SessionManager sessionManager = new SessionManager(context);
+                sessionManager.guardarUsuario(usuario);
                 logged.setValue(Boolean.TRUE);
             }
 
@@ -39,8 +42,5 @@ public class LoginViewModel extends ViewModel {
         });
     }
 
-    public Usuario getUsuario(){
-        return usuarioLiveData.getValue();
-    }
 }
 

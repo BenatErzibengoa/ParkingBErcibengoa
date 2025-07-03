@@ -89,6 +89,18 @@ public class Utils {
         return LocalDateTime.parse(fechaHora, formatter);
     }
 
+    public static String parseSeleccionPlazaFecha(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault());
+        return dateTime.format(formatter);
+    }
+
+    public static String parseSeleccionPlazaHora(LocalDateTime start, LocalDateTime end) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return start.format(formatter) + " - " + end.format(formatter);
+    }
+
+
+
     public static String generarUUID() {
         return UUID.randomUUID().toString();
     }
