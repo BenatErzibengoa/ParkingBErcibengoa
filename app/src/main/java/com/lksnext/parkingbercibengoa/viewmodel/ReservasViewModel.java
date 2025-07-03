@@ -203,25 +203,11 @@ public class ReservasViewModel extends AndroidViewModel {
                     Log.e("ReservasViewModel", "Error al obtener horario de plaza " + plaza.getId() + ": " + error);
 
                     if (plazasProcesadas.incrementAndGet() == totalPlazas) {
-                        horariosPorPlazaLiveData.postValue(mapaHorarios);  // Publica lo que sí se pudo cargar
+                        horariosPorPlazaLiveData.postValue(mapaHorarios);
                         Log.d("ReservasViewModel", "Carga de horarios finalizada con errores.");
                     }
                 }
             });
-        }
-    }
-
-
-
-    public void printHorariosPorPlaza() {
-        HashMap<Plaza, HorarioPlaza> mapa = horariosPorPlazaLiveData.getValue();
-        if (mapa == null || mapa.isEmpty()) {
-            Log.d("ReservasViewModel", "El mapa de horarios está vacío o es nulo.");
-            return;
-        }
-        for (Plaza plaza : mapa.keySet()) {
-            HorarioPlaza horario = mapa.get(plaza);
-            Log.d("ReservasViewModel", "Plaza: " + plaza.toString() + " -> Horario: " + horario.getHorario().toString());
         }
     }
 

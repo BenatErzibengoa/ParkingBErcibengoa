@@ -46,7 +46,7 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     @Override
     protected void observarReservas() {
         getViewModel().getReservas().observe(getViewLifecycleOwner(), reservas -> {
-            mostrarReservas(reservas, false);
+            mostrarReservas(reservas, true);
         });
 
         getViewModel().getErrorCargarReservas().observe(getViewLifecycleOwner(), error -> {
