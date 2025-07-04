@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+        //Si el appbar tiene titulo, borrarlo
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("");
+        }
 
 
         //Con el NavigationHost podremos movernos por distintas pestañas dentro de la misma pantalla
