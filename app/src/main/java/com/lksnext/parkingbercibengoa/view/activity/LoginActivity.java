@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.FirebaseApp;
@@ -27,6 +28,8 @@ public class LoginActivity extends AppCompatActivity {
         ActivityLoginBinding binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         //TODO: BORRAR ESTAS DOS LINEAS AL FINALIZAR
         binding.emailText.setText("bengoaerzi@gmail.com");

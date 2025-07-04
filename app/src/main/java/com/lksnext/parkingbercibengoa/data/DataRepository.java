@@ -28,7 +28,9 @@ import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
 import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -254,14 +256,49 @@ public class DataRepository {
     }
 
     public void guardarReserva(Usuario usuario, Reserva reserva, Callback callback) {
-        db.collection("usuarios")
-                .document(usuario.getId())
-                .collection("reservas")
-                .document(reserva.getId())
-                .set(ReservaDTO.toMap(reserva))
-                .addOnSuccessListener(aVoid -> callback.onSuccess())
-                .addOnFailureListener(e -> callback.onFailure("Error al guardar reserva en usuario: " + e.getMessage()));
+        Plaza plaza = reserva.getPlaza();
+        LocalDateTime inicio = reserva.getFechaInicio();
+        Duration duracion = reserva.getDuracion();
+        LocalDate dia = inicio.toLocalDate();
+
+        getOrCreateHorarioPlaza(plaza, dia, new LoginCallback<HorarioPlaza>() {
+            @Override
+            public void onSuccess(HorarioPlaza horarioPlaza) {
+                boolean exito = horarioPlaza.reservar(inicio, duracion);
+
+                if (!exito) {
+                    callback.onFailure("No se pudo reservar la plaza en el horario indicado.");
+                    return;
+                }
+
+                // Convertimos el nuevo horario en mapa y lo guardamos en Firestore
+                Map<String, Object> horarioMap = HorarioPlazaDTO.toMap(horarioPlaza);
+
+                db.collection("plazas")
+                        .document(plaza.getId())
+                        .collection("horarios")
+                        .document(dia.toString())
+                        .set(horarioMap)
+                        .addOnSuccessListener(aVoid -> {
+                            // Finalmente guardamos la reserva
+                            db.collection("usuarios")
+                                    .document(usuario.getId())
+                                    .collection("reservas")
+                                    .document(reserva.getId())
+                                    .set(ReservaDTO.toMap(reserva))
+                                    .addOnSuccessListener(aVoid2 -> callback.onSuccess())
+                                    .addOnFailureListener(e -> callback.onFailure("Error al guardar la reserva: " + e.getMessage()));
+                        })
+                        .addOnFailureListener(e -> callback.onFailure("Error al guardar el horario actualizado: " + e.getMessage()));
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                callback.onFailure("Error al obtener/crear horario: " + errorMessage);
+            }
+        });
     }
+
 
 
 
