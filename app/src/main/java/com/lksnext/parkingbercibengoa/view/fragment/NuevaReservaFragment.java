@@ -2,15 +2,19 @@ package com.lksnext.parkingbercibengoa.view.fragment;
 
 import static androidx.lifecycle.AndroidViewModel_androidKt.getApplication;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -62,11 +66,16 @@ public class NuevaReservaFragment extends Fragment {
             requireActivity().getSupportFragmentManager().popBackStack();
         });
 
+
+
+
         binding.fechaText.setOnClickListener(v -> showCalendar());
         binding.horaComienzoText.setOnClickListener(v -> showTimePicker(binding.horaComienzoText));
         binding.horaFinText.setOnClickListener(v -> showTimePicker(binding.horaFinText));
         binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
         binding.reservarButton.setOnClickListener(v -> buscarPlazas());
+
+
     }
 
     //Para que cuando vuelva de NuevoVehiculo se cargue el nuevo coche
@@ -101,6 +110,7 @@ public class NuevaReservaFragment extends Fragment {
                 .setHour(7)
                 .setMinute(0)
                 .setTitleText("Seleccione la hora")
+                .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)  // Modo circular
                 .build();
 
         picker.show(getParentFragmentManager(), "time_picker");
@@ -181,15 +191,6 @@ public class NuevaReservaFragment extends Fragment {
     }
 
     private void observeViewModel() {
-        /*
-        viewModel.getUsuarioLiveData().observe(getViewLifecycleOwner(), usuario -> {
-            if (usuario == null) {
-                Utils.showError("Usuario no encontrado", binding.errorText);
-            } else {
-                usuarioActual = usuario;  // guardo el usuario para usar en reservar()
-            }
-        });
-        */
         viewModel.getVehiculos().observe(getViewLifecycleOwner(), vehiculos -> {
             if (vehiculos != null) {
                 listaVehiculos.clear();

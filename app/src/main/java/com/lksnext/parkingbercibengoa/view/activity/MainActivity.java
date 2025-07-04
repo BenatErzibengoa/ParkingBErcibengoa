@@ -1,5 +1,6 @@
 package com.lksnext.parkingbercibengoa.view.activity;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,9 @@ import com.lksnext.parkingbercibengoa.databinding.ActivityMainBinding;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -49,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
             (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.flFragment);
         navController = navHostFragment.getNavController();
 
+        //toolbar
+        appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.reservasFragment, R.id.historialFragment
+        ).build();
+
         //Asignamos los botones de navegacion que se encuentran en la vista (layout)
         bottomNavigationView = binding.bottomNavigationView;
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
@@ -68,6 +77,17 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                View decor = window.getDecorView();
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR); // Texto oscuro
+            }
+        }
+
     }
 
     @Override

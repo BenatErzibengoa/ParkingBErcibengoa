@@ -48,6 +48,9 @@ public class NuevoVehiculoFragment extends Fragment {
 
         binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
         binding.crearVehiculoButton.setOnClickListener(v -> crearVehiculo());
+        binding.backButton.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
     }
 
     private void showVehicleSelector() {
