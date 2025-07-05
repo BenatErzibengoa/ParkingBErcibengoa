@@ -13,6 +13,10 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.CompositeDateValidator;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.timepicker.MaterialTimePicker;
@@ -27,18 +31,22 @@ import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class NuevaReservaFragment extends Fragment {
 
     private FragmentNuevaReservaBinding binding;
     private ReservasViewModel viewModel;
+    private NavController navController;
 
     private ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
     private Vehiculo vehiculoSeleccionado = null;
-
-    NavController navController;
+    private static final int MAX_DIAS_RESERVA = 8; //hoy + 7 dias = 8 dias
+    private static final int MAX_HORAS_RESERVA = 9;
 
 
 
@@ -90,14 +98,65 @@ public class NuevaReservaFragment extends Fragment {
     }
 
     private void showCalendar() {
+    // Definir el rango permitido
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        long todayInMillis = today.getTimeInMillis();
+
+        Calendar maxDate = (Calendar) today.clone();
+        maxDate.add(Calendar.DAY_OF_YEAR, MAX_DIAS_RESERVA);
+        long maxDateInMillis = maxDate.getTimeInMillis();
+
+        List<CalendarConstraints.DateValidator> validators = new ArrayList<>();
+        validators.add(DateValidatorPointForward.from(todayInMillis));                //tope inferior (hoy)
+        validators.add(DateValidatorPointBackward.before(maxDateInMillis + 1)); //tope superior (hoy + 7 dias)
+
+        CalendarConstraints.DateValidator dateValidator = CompositeDateValidator.allOf(validators);
+
+        // Configurar restricciones con el validador personalizado
+        CalendarConstraints constraints = new CalendarConstraints.Builder()
+                .setStart(todayInMillis)
+                .setEnd(maxDateInMillis)
+                .setOpenAt(todayInMillis)
+                .setValidator(dateValidator)
+                .build();
+
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Selecciona una fecha")
+                .setTitleText("Selecciona una fecha (máximo 7 días)")
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .setCalendarConstraints(constraints)
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(selection);
+
+            // Validar que la fecha no esté en el pasado
+            Calendar todayValidation = Calendar.getInstance();
+            todayValidation.set(Calendar.HOUR_OF_DAY, 0);
+            todayValidation.set(Calendar.MINUTE, 0);
+            todayValidation.set(Calendar.SECOND, 0);
+            todayValidation.set(Calendar.MILLISECOND, 0);
+
+            if (cal.before(todayValidation)) {
+                Utils.showError("No se pueden hacer reservas para fechas pasadas", binding.errorText);
+                return;
+            }
+
+            // Validar que no sea más de 7 días
+            long daysDifference = ChronoUnit.DAYS.between(
+                    todayValidation.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                    cal.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            );
+
+            if (daysDifference > MAX_DIAS_RESERVA) {
+                Utils.showError("No se pueden hacer reservas para más de " + MAX_DIAS_RESERVA + " días", binding.errorText);
+                return;
+            }
+
             String selectedDate = String.format("%02d/%02d/%04d",
                     cal.get(Calendar.DAY_OF_MONTH),
                     cal.get(Calendar.MONTH) + 1,
@@ -170,11 +229,25 @@ public class NuevaReservaFragment extends Fragment {
         try {
             LocalDateTime inicio = Utils.parseFechaHora(fecha, horaInicio);
             LocalDateTime fin = Utils.parseFechaHora(fecha, horaFin);
+            LocalDateTime ahora = LocalDateTime.now();
+
+
+            if (inicio.isBefore(ahora)) {
+                Utils.showError("La hora de inicio no puede estar en el pasado.", binding.errorText);
+                return;
+            }
 
             if (!fin.isAfter(inicio)) {
                 Utils.showError("Fin debe ser posterior a inicio.", binding.errorText);
                 return;
             }
+
+            long duracionHoras = ChronoUnit.HOURS.between(inicio, fin);
+            if (duracionHoras > MAX_HORAS_RESERVA) {
+                Utils.showError("La reserva no puede durar más de " + MAX_HORAS_RESERVA + " horas", binding.errorText);
+                return;
+            }
+
             viewModel.setHoraInicio(inicio);
             viewModel.setHoraFin(fin);
 
@@ -183,6 +256,7 @@ public class NuevaReservaFragment extends Fragment {
             Utils.showError("Error al buscar plazas: " + e.getMessage(), binding.errorText);
             Log.e("NuevaReservaFragment", "Excepción general", e);
         }
+
     }
     private void observeViewModel() {
         viewModel.getVehiculos().observe(getViewLifecycleOwner(), vehiculos -> {
