@@ -266,6 +266,9 @@ public class SeleccionarPlazaFragment extends Fragment {
                 viewModel.reservarPlaza(reserva);
             }
 
+            Utils.programarNotificaciones(requireContext(), reserva);
+
+
             new AlertDialog.Builder(requireContext())
                     .setTitle(estaEditando ? "¡Reserva actualizada!" : "¡Reserva confirmada!")
                     .setMessage("Plaza: " + selectedSpot.getId() + "\nFecha: " +
