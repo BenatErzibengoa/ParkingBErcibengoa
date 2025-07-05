@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -23,7 +22,6 @@ import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentNuevaReservaBinding;
 import com.lksnext.parkingbercibengoa.domain.Reserva;
 import com.lksnext.parkingbercibengoa.domain.TipoVehiculo;
-import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
@@ -75,7 +73,6 @@ public class NuevaReservaFragment extends Fragment {
             viewModel.setReservaAEditar(null);
             navController.popBackStack();
         });
-
 
         binding.fechaText.setOnClickListener(v -> showCalendar());
         binding.horaComienzoText.setOnClickListener(v -> showTimePicker(binding.horaComienzoText));
@@ -175,7 +172,7 @@ public class NuevaReservaFragment extends Fragment {
             LocalDateTime fin = Utils.parseFechaHora(fecha, horaFin);
 
             if (!fin.isAfter(inicio)) {
-                Utils.showError("La hora de fin debe ser después de la hora de inicio", binding.errorText);
+                Utils.showError("Fin debe ser posterior a inicio.", binding.errorText);
                 return;
             }
             viewModel.setHoraInicio(inicio);
