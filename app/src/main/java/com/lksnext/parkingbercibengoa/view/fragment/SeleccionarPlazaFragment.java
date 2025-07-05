@@ -20,6 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentSeleccionarPlazaBinding;
@@ -45,6 +48,9 @@ public class SeleccionarPlazaFragment extends Fragment {
     private View currentSelectedView = null;
     private List<Plaza> plazas;
 
+    NavController navController;
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -57,10 +63,11 @@ public class SeleccionarPlazaFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
-
         if(viewModel.getReservaAEditar().getValue() != null){
             binding.reservarButton.setText("Editar reserva");
         }
+        navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
+
 
         viewModel.getPlazas().observe(getViewLifecycleOwner(), plazas -> {
             Log.d("SeleccionarPlazaFragment", "plazas cargadas ");
@@ -105,8 +112,8 @@ public class SeleccionarPlazaFragment extends Fragment {
         }
 
         toolbar.setNavigationOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
+            if (navController != null) {
+                navController.popBackStack();
             }
         });
     }
@@ -267,8 +274,8 @@ public class SeleccionarPlazaFragment extends Fragment {
                     .setPositiveButton("OK", null)
                     .show();
 
-            requireActivity().getSupportFragmentManager().popBackStack();
-            requireActivity().getSupportFragmentManager().popBackStack();
+            navController.popBackStack();
+            navController.popBackStack();
         }
     }
 

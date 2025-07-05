@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.databinding.FragmentReservasBinding;
@@ -27,6 +29,9 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
 
     private FragmentReservasBinding binding;
     private ReservasViewModel viewModel;
+
+    NavController navController;
+
 
     @Override
     protected View inflarLayout(LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -66,13 +71,9 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
 
     @Override
     protected void onExtraViewReady() {
+        navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
         binding.btnNuevaReserva.setOnClickListener(v -> {
-            NuevaReservaFragment nuevaReservaFragment = new NuevaReservaFragment();
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.flFragment, nuevaReservaFragment) // flFragment es el contenedor de la Main Activity
-                    .addToBackStack(null) // Boton back
-                    .commit();
+            navController.navigate(R.id.action_reservasFragment_to_nuevaReservaFragment);
         });
     }
 
@@ -134,12 +135,9 @@ public class ReservasFragment extends BaseReservasFragment<ReservasViewModel> {
     }
 
     private void editarReserva(Reserva reserva) {
-        NuevaReservaFragment fragment = new NuevaReservaFragment();
         viewModel.setReservaAEditar(reserva);
-        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flFragment, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
+        navController.navigate(R.id.action_reservasFragment_to_nuevaReservaFragment);
     }
 
     private void confirmarCancelacion(Reserva reserva) {

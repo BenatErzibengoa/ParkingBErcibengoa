@@ -1,22 +1,18 @@
 package com.lksnext.parkingbercibengoa.view.fragment;
 
-import static androidx.lifecycle.AndroidViewModel_androidKt.getApplication;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
@@ -32,7 +28,6 @@ import com.lksnext.parkingbercibengoa.domain.Vehiculo;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
 import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,9 +38,9 @@ public class NuevaReservaFragment extends Fragment {
     private ReservasViewModel viewModel;
 
     private ArrayList<Vehiculo> listaVehiculos = new ArrayList<>();
-
-    private Usuario usuarioActual = null;
     private Vehiculo vehiculoSeleccionado = null;
+
+    NavController navController;
 
 
 
@@ -64,8 +59,7 @@ public class NuevaReservaFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
+        navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
 
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         if (viewModel.getReservaAEditar().getValue() != null) {
@@ -79,7 +73,7 @@ public class NuevaReservaFragment extends Fragment {
         binding.backButton.setOnClickListener(v -> {
             // Volver atrás en la pila de fragments
             viewModel.setReservaAEditar(null);
-            requireActivity().getSupportFragmentManager().popBackStack();
+            navController.popBackStack();
         });
 
 
@@ -151,12 +145,7 @@ public class NuevaReservaFragment extends Fragment {
         listPopupWindow.setOnItemClickListener((parent, view, position, id) -> {
             Vehiculo seleccionado = adapter.getItem(position);
             if (seleccionado != null && "➕ Nuevo vehículo".equals(seleccionado.getModelo())) {
-                Fragment nuevoVehiculoFragment = new NuevoVehiculoFragment();
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.flFragment, nuevoVehiculoFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-
+                navController.navigate(R.id.action_nuevaReservaFragment_to_nuevoVehiculoFragment);
                 listPopupWindow.dismiss();
                 return;
             }
@@ -192,17 +181,12 @@ public class NuevaReservaFragment extends Fragment {
             viewModel.setHoraInicio(inicio);
             viewModel.setHoraFin(fin);
 
-            Fragment seleccionarPlazaFragment = new SeleccionarPlazaFragment();
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.flFragment, seleccionarPlazaFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            navController.navigate(R.id.action_nuevaReservaFragment_to_seleccionarPlazaFragment);
         } catch (Exception e) {
             Utils.showError("Error al buscar plazas: " + e.getMessage(), binding.errorText);
             Log.e("NuevaReservaFragment", "Excepción general", e);
         }
     }
-
     private void observeViewModel() {
         viewModel.getVehiculos().observe(getViewLifecycleOwner(), vehiculos -> {
             if (vehiculos != null) {
@@ -212,7 +196,6 @@ public class NuevaReservaFragment extends Fragment {
             }
         });
     }
-
     private void cargarDatosReserva(Reserva reserva) {
         LocalDateTime inicio = reserva.getFechaInicio();
         LocalDateTime fin = inicio.plus(reserva.getDuracion());
@@ -227,17 +210,4 @@ public class NuevaReservaFragment extends Fragment {
         viewModel.setHoraInicio(inicio);
         viewModel.setHoraFin(fin);
     }
-
-    private void limpiarDatosReserva() {
-        binding.fechaText.setText("");
-        binding.horaComienzoText.setText("");
-        binding.horaFinText.setText("");
-        binding.vehiculoText.setText("");
-        vehiculoSeleccionado = null;
-
-        viewModel.setVehiculoSeleccionado(vehiculoSeleccionado);
-        viewModel.setHoraInicio(null);
-        viewModel.setHoraFin(null);
-    }
-
 }

@@ -12,7 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
+import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.data.DataRepository;
 import com.lksnext.parkingbercibengoa.databinding.FragmentNuevoVehiculoBinding;
@@ -29,6 +32,9 @@ public class NuevoVehiculoFragment extends Fragment {
 
     private ReservasViewModel viewModel;
     private FragmentNuevoVehiculoBinding binding;
+
+    NavController navController;
+
     private List<TipoVehiculo> tiposVehiculo = Arrays.asList(
             TipoVehiculo.COCHE, TipoVehiculo.ELECTRICO, TipoVehiculo.MOTO, TipoVehiculo.DISCAPACITADO
     );
@@ -45,11 +51,12 @@ public class NuevoVehiculoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
-
+        navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
         binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
         binding.crearVehiculoButton.setOnClickListener(v -> crearVehiculo());
         binding.backButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().popBackStack();
+            navController.popBackStack();
         });
     }
 
@@ -98,13 +105,11 @@ public class NuevoVehiculoFragment extends Fragment {
 
         });
 
-
-
         new AlertDialog.Builder(requireContext())
                 .setTitle("Vehículo guardado")
                 .setMessage("El vehículo ha sido añadido correctamente.")
                 .setPositiveButton("OK", (dialog, which) -> {
-                    requireActivity().onBackPressed();
+                    navController.popBackStack();
                 })
                 .show();
     }
