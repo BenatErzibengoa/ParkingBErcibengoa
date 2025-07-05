@@ -99,6 +99,17 @@ public class Utils {
         return start.format(formatter) + " - " + end.format(formatter);
     }
 
+    public static String formatFecha(LocalDateTime fecha) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return fecha.format(formatter);
+    }
+
+    public static String formatHora(LocalDateTime fecha) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return fecha.format(formatter);
+    }
+
+
 
 
     public static String generarUUID() {

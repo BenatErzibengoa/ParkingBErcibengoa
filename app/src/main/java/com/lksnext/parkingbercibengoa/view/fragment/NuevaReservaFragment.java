@@ -47,6 +47,14 @@ public class NuevaReservaFragment extends Fragment {
     private Usuario usuarioActual = null;
     private Vehiculo vehiculoSeleccionado = null;
 
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentNuevaReservaBinding.inflate(inflater, container, false);
@@ -57,16 +65,22 @@ public class NuevaReservaFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
+        if (viewModel.getReservaAEditar().getValue() != null) {
+            cargarDatosReserva(viewModel.getReservaAEditar().getValue());
+            binding.titulo.setText("Editar reserva");
+        }
+
         observeViewModel();
         viewModel.cargarVehiculos();
 
         binding.backButton.setOnClickListener(v -> {
             // Volver atrás en la pila de fragments
+            viewModel.setReservaAEditar(null);
             requireActivity().getSupportFragmentManager().popBackStack();
         });
-
-
 
 
         binding.fechaText.setOnClickListener(v -> showCalendar());
@@ -74,7 +88,6 @@ public class NuevaReservaFragment extends Fragment {
         binding.horaFinText.setOnClickListener(v -> showTimePicker(binding.horaFinText));
         binding.vehiculoText.setOnClickListener(v -> showVehicleSelector());
         binding.reservarButton.setOnClickListener(v -> buscarPlazas());
-
 
     }
 
@@ -199,4 +212,32 @@ public class NuevaReservaFragment extends Fragment {
             }
         });
     }
+
+    private void cargarDatosReserva(Reserva reserva) {
+        LocalDateTime inicio = reserva.getFechaInicio();
+        LocalDateTime fin = inicio.plus(reserva.getDuracion());
+
+        binding.fechaText.setText(Utils.formatFecha(inicio));
+        binding.horaComienzoText.setText(Utils.formatHora(inicio));
+        binding.horaFinText.setText(Utils.formatHora(fin));
+        binding.vehiculoText.setText(reserva.getVehiculo().getModelo());
+        vehiculoSeleccionado = reserva.getVehiculo();
+
+        viewModel.setVehiculoSeleccionado(vehiculoSeleccionado);
+        viewModel.setHoraInicio(inicio);
+        viewModel.setHoraFin(fin);
+    }
+
+    private void limpiarDatosReserva() {
+        binding.fechaText.setText("");
+        binding.horaComienzoText.setText("");
+        binding.horaFinText.setText("");
+        binding.vehiculoText.setText("");
+        vehiculoSeleccionado = null;
+
+        viewModel.setVehiculoSeleccionado(vehiculoSeleccionado);
+        viewModel.setHoraInicio(null);
+        viewModel.setHoraFin(null);
+    }
+
 }

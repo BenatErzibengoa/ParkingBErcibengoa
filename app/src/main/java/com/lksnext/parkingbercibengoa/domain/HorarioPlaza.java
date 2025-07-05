@@ -48,6 +48,34 @@ public class HorarioPlaza {
         return false;
     }
 
+    public void cancelarReserva(LocalDateTime inicioViejo, Duration duracionVieja) {
+        LocalDateTime finViejo = inicioViejo.plus(duracionVieja);
+
+        // Si la reserva estaba en dos días distintos, hay que cancelar en ambos
+        if (!inicioViejo.toLocalDate().equals(finViejo.toLocalDate())) {
+            // Cancelar el tramo del primer día
+            Duration duracionDia1 = Duration.between(inicioViejo, inicioViejo.toLocalDate().plusDays(1).atStartOfDay());
+            cancelarReserva(inicioViejo, duracionDia1);
+
+            // Cancelar el tramo del segundo día (debe obtenerse el HorarioPlaza correspondiente al día siguiente)
+            HorarioPlaza horarioPlazaSiguienteDia = null; // TODO: Obtener desde la base de datos o contexto adecuado
+            LocalDateTime inicioDia2 = inicioViejo.toLocalDate().plusDays(1).atStartOfDay();
+            Duration duracionDia2 = Duration.between(inicioDia2, finViejo);
+            if (horarioPlazaSiguienteDia != null) {
+                horarioPlazaSiguienteDia.cancelarReserva(inicioDia2, duracionDia2);
+            }
+            return;
+        }
+
+        int indiceInicio = inicioViejo.getHour() * 60 + inicioViejo.getMinute();
+        int indiceFinal = indiceInicio + (int) duracionVieja.toMinutes();
+        for (int i = indiceInicio; i <= indiceFinal; i++) {
+            horario.clear(i);
+        }
+    }
+
+
+
     public boolean estaLibreDurante(LocalDateTime fechaInicio, Duration duracion){
         int indiceInicio = fechaInicio.getHour() * 60 + fechaInicio.getMinute();
         int indiceFinal = indiceInicio + (int)duracion.toMinutes();

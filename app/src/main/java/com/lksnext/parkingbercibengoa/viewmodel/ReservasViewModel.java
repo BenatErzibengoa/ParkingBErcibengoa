@@ -39,6 +39,9 @@ public class ReservasViewModel extends AndroidViewModel {
     private final MutableLiveData<List<Plaza>> plazas = new MutableLiveData<>();
     private final MutableLiveData<HashMap<Plaza, HorarioPlaza>> horariosPorPlazaLiveData = new MutableLiveData<>();
 
+    private final MutableLiveData<Reserva> reservaAEditar = new MutableLiveData<>(null);
+
+
     // Errores
     private final MutableLiveData<String> errorCargarReservas = new MutableLiveData<>();
     private final MutableLiveData<String> errorCargarVehiculos = new MutableLiveData<>();
@@ -61,6 +64,9 @@ public class ReservasViewModel extends AndroidViewModel {
     public LiveData<LocalDateTime> gethoraInicio() { return horaInicio; }
     public LiveData<LocalDateTime> gethoraFin() { return horaFin; }
     public LiveData<List<Plaza>> getPlazas() { return plazas; }
+
+    public LiveData<Reserva> getReservaAEditar() {return reservaAEditar;}
+
     public LiveData<String> getErrorCargarReservas() { return errorCargarReservas; }
     public LiveData<String> getErrorCargarVehiculos() { return errorCargarVehiculos; }
     public LiveData<String> getErrorAñadirReserva() { return errorAñadirReserva; }
@@ -74,6 +80,7 @@ public class ReservasViewModel extends AndroidViewModel {
     public void setVehiculoSeleccionado(Vehiculo vehiculo) { vehiculoSeleccionado.setValue(vehiculo); }
     public void setHoraInicio(LocalDateTime hora) { horaInicio.setValue(hora); }
     public void setHoraFin(LocalDateTime hora) { horaFin.setValue(hora); }
+    public void setReservaAEditar(Reserva reserva){reservaAEditar.setValue(reserva);}
 
     public void cargarReservasDelUsuario() {
         if (reservas.getValue() != null && !reservas.getValue().isEmpty()) {
@@ -210,6 +217,64 @@ public class ReservasViewModel extends AndroidViewModel {
             });
         }
     }
+
+    public void editarReserva(Reserva reservaVieja, Reserva reservaNueva) {
+        Usuario user = usuario.getValue();
+
+        if (user == null) {
+            errorAñadirReserva.setValue("Usuario no válido.");
+            return;
+        }
+
+        DataRepository.getInstance().editarReserva(user, reservaVieja, reservaNueva, new Callback() {
+            @Override
+            public void onSuccess() {
+                List<Reserva> listaActual = reservas.getValue();
+                if (listaActual != null) {
+                    List<Reserva> nuevaLista = new ArrayList<>(listaActual);
+                    // Reemplazar la reserva vieja por la nueva (mismo ID o igualdad por equals)
+                    int index = nuevaLista.indexOf(reservaVieja);
+                    if (index != -1) {
+                        nuevaLista.set(index, reservaNueva);
+                    } else {
+                        // Si no se encuentra, añadir la nueva
+                        nuevaLista.add(reservaNueva);
+                    }
+                    reservas.postValue(nuevaLista);
+                }
+                Log.d("ReservasViewModel", "Reserva editada correctamente");
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log.e("ReservasViewModel", "Error al editar la reserva: " + message);
+                errorAñadirReserva.setValue("Error al editar la reserva: " + message);
+            }
+        });
+    }
+
+
+    public void cancelarReserva(Reserva reserva, Callback callback) {
+        DataRepository.getInstance().eliminarReserva(usuario.getValue(), reserva, new Callback() {
+            @Override
+            public void onSuccess() {
+                // Quitar la reserva eliminada de la lista LiveData
+                List<Reserva> listaActual = reservas.getValue();
+                if (listaActual != null) {
+                    List<Reserva> nuevaLista = new ArrayList<>(listaActual);
+                    nuevaLista.removeIf(r -> r.getId().equals(reserva.getId()));
+                    reservas.postValue(nuevaLista);
+                }
+                callback.onSuccess();
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure(error);
+            }
+        });
+    }
+
 
 
 }

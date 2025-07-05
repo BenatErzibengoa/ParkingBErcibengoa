@@ -58,6 +58,10 @@ public class SeleccionarPlazaFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
 
+        if(viewModel.getReservaAEditar().getValue() != null){
+            binding.reservarButton.setText("Editar reserva");
+        }
+
         viewModel.getPlazas().observe(getViewLifecycleOwner(), plazas -> {
             Log.d("SeleccionarPlazaFragment", "plazas cargadas ");
             this.plazas = plazas;
@@ -239,19 +243,24 @@ public class SeleccionarPlazaFragment extends Fragment {
             LocalDateTime fin = viewModel.gethoraFin().getValue();
             Duration duracion = Duration.between(inicio, fin);
 
-            Reserva reserva = new Reserva(
-                    java.util.UUID.randomUUID().toString(),
-                    usuario,
-                    vehiculo,
-                    inicio,
-                    duracion,
-                    selectedSpot
-            );
+            boolean estaEditando = viewModel.getReservaAEditar().getValue() != null;
 
-            viewModel.reservarPlaza(reserva);
+            Reserva reserva = new Reserva(java.util.UUID.randomUUID().toString(), usuario, vehiculo, inicio, duracion, selectedSpot);
+
+
+            if (estaEditando) {
+                Reserva reservaVieja = viewModel.getReservaAEditar().getValue();
+                reserva.setFechaInicio(inicio);
+                reserva.setDuracion(duracion);
+                reserva.setPlaza(selectedSpot);
+                viewModel.editarReserva(reservaVieja, reserva);
+                viewModel.setReservaAEditar(null);
+            } else {
+                viewModel.reservarPlaza(reserva);
+            }
 
             new AlertDialog.Builder(requireContext())
-                    .setTitle("¡Reserva confirmada!")
+                    .setTitle(estaEditando ? "¡Reserva actualizada!" : "¡Reserva confirmada!")
                     .setMessage("Plaza: " + selectedSpot.getId() + "\nFecha: " +
                                 Utils.parseSeleccionPlazaFecha(inicio) + "\nHorario: " +
                                 Utils.parseSeleccionPlazaHora(inicio, fin))
@@ -262,6 +271,7 @@ public class SeleccionarPlazaFragment extends Fragment {
             requireActivity().getSupportFragmentManager().popBackStack();
         }
     }
+
 
     @Override
     public void onDestroyView() {

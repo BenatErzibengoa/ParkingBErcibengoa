@@ -13,6 +13,8 @@
     <color name="blueMain">#5D9CEC</color>
     <color name="greenMain">#2ECC71</color>
     <color name="gray">#B5635C5C</color>
+    <color name="card_pressed">#E0E0E0</color>
+
 
 
 </resources>

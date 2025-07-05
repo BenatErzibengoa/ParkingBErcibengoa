@@ -2,6 +2,7 @@ package com.lksnext.parkingbercibengoa.data;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.FirebaseTooManyRequestsException;
@@ -11,9 +12,11 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.lksnext.parkingbercibengoa.data.firebase.HorarioPlazaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
@@ -298,6 +301,98 @@ public class DataRepository {
             }
         });
     }
+
+
+    public void eliminarReserva(Usuario usuario, Reserva reserva, Callback callback) {
+        Plaza plaza = reserva.getPlaza();
+        LocalDateTime inicio = reserva.getFechaInicio();
+        Duration duracion = reserva.getDuracion();
+        LocalDate dia = inicio.toLocalDate();
+
+        getOrCreateHorarioPlaza(plaza, dia, new LoginCallback<HorarioPlaza>() {
+            @Override
+            public void onSuccess(HorarioPlaza horarioPlaza) {
+                horarioPlaza.cancelarReserva(inicio, duracion);
+
+                Map<String, Object> horarioMap = HorarioPlazaDTO.toMap(horarioPlaza);
+                db.collection("plazas")
+                        .document(plaza.getId())
+                        .collection("horarios")
+                        .document(dia.toString())
+                        .set(horarioMap)
+                        .addOnSuccessListener(aVoid -> {
+                            db.collection("usuarios")
+                                    .document(usuario.getId())
+                                    .collection("reservas")
+                                    .document(reserva.getId())
+                                    .delete()
+                                    .addOnSuccessListener(aVoid1 -> callback.onSuccess())
+                                    .addOnFailureListener(e -> callback.onFailure("Error al eliminar reserva: " + e.getMessage()));
+                        })
+                        .addOnFailureListener(e -> callback.onFailure("Error al actualizar horario: " + e.getMessage()));
+                Log.d("DataRepository", "Reserva eliminada");
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                callback.onFailure("Error al obtener horario: " + errorMessage);
+            }
+        });
+    }
+
+    public void editarReserva(Usuario usuario, Reserva reservaVieja, Reserva reservaNueva, Callback callback) {
+        eliminarReserva(usuario, reservaVieja, new Callback() {
+            @Override
+            public void onSuccess() {
+                guardarReserva(usuario, reservaNueva, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        callback.onSuccess();
+                    }
+
+                    @Override
+                    public void onFailure(String msg) {
+                        callback.onFailure("Se eliminó la reserva antigua, pero falló al guardar la nueva: " + msg);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(String msg) {
+                callback.onFailure("Error al eliminar la reserva antigua: " + msg);
+            }
+        });
+    }
+
+
+    public void eliminarTodosLosHorariosDeTodasLasPlazas(Callback callback) {
+        db.collection("plazas").get().addOnSuccessListener(plazasSnapshot -> {
+            List<Task<Void>> tareas = new ArrayList<>();
+
+            for (DocumentSnapshot plazaDoc : plazasSnapshot.getDocuments()) {
+                String plazaId = plazaDoc.getId();
+                CollectionReference horariosRef = db.collection("plazas").document(plazaId).collection("horarios");
+
+                Task<Void> tarea = horariosRef.get().continueWithTask(horariosTask -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot horarioDoc : horariosTask.getResult()) {
+                        batch.delete(horarioDoc.getReference());
+                    }
+                    return batch.commit(); // devuelve Task<Void>
+                });
+
+                tareas.add(tarea);
+            }
+
+            Tasks.whenAllComplete(tareas)
+                    .addOnSuccessListener(results -> callback.onSuccess())
+                    .addOnFailureListener(e -> callback.onFailure("Error al eliminar horarios: " + e.getMessage()));
+
+        }).addOnFailureListener(e -> callback.onFailure("Error al obtener plazas: " + e.getMessage()));
+    }
+
+
+
 
 
 

@@ -127,9 +127,15 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
                     card.etiquetaTipo.setBackground(drawable);
                 }
 
+                configurarListenersReserva(card, r, esFuturo);
+
                 getContainerReservas().addView(card.getRoot());
             }
         }
+    }
+
+    //Este metodo sirve para que reservasFragment pueda configurar listeners de click por cada reserva
+    protected void configurarListenersReserva(ReservaItemBinding card, Reserva reserva, boolean esFuturo) {
     }
 
 

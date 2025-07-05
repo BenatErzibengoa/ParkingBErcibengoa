@@ -1,6 +1,6 @@
 package com.lksnext.parkingbercibengoa.domain;
 
-public class Vehiculo {
+public class Vehiculo  {
     private String matricula;
     private String modelo;
     private TipoVehiculo tipoVehiculo;
