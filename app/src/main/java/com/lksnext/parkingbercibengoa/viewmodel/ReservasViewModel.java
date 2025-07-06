@@ -30,6 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ReservasViewModel extends AndroidViewModel {
 
+    private final DataRepository dataRepository;
+
     private final MutableLiveData<Usuario> usuario = new MutableLiveData<>();
     private final MutableLiveData<List<Reserva>> reservas = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Vehiculo>> vehiculos = new MutableLiveData<>();
@@ -49,11 +51,23 @@ public class ReservasViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorAñadirVehiculo = new MutableLiveData<>();
     private final MutableLiveData<String> errorCargarPlazas = new MutableLiveData<>();
 
+
     public ReservasViewModel(@NonNull Application application) {
         super(application);
+        this.dataRepository = DataRepository.getInstance();
         Context context = application.getApplicationContext();
         SessionManager sessionManager = new SessionManager(context);
-        usuario.setValue(sessionManager.getUsuario());
+        usuario.postValue(sessionManager.getUsuario());
+    }
+
+    // Solo para testing
+    public ReservasViewModel(@NonNull Application application, DataRepository repository) {
+        super(application);
+        this.dataRepository = repository;
+
+        Context context = application.getApplicationContext();
+        SessionManager sessionManager = new SessionManager(context);
+        usuario.postValue(sessionManager.getUsuario());
     }
 
     // Getters
@@ -83,10 +97,10 @@ public class ReservasViewModel extends AndroidViewModel {
     public void setReservaAEditar(Reserva reserva){reservaAEditar.setValue(reserva);}
 
     public void cargarReservasDelUsuario() {
-        if (reservas.getValue() != null && !reservas.getValue().isEmpty()) {
-            return; // si los vehiculos han sido cargados, no hacer nada
+        if ( (reservas.getValue() != null && !reservas.getValue().isEmpty()) || usuario.getValue() == null) {
+            return; // si los vehiculos han sido cargados o el usuario es null no hacer nada
         }
-        DataRepository.getInstance().obtenerReservasUsuario(usuario.getValue().getId(), new CallbackList<Reserva>() {
+        dataRepository.obtenerReservasUsuario(usuario.getValue().getId(), new CallbackList<Reserva>() {
             @Override
             public void onSuccess(List<Reserva> lista) {
                 reservas.setValue(lista);
@@ -101,10 +115,10 @@ public class ReservasViewModel extends AndroidViewModel {
     }
 
     public void cargarVehiculos() {
-        if (vehiculos.getValue() != null && !vehiculos.getValue().isEmpty()) {
+        if ( (vehiculos.getValue() != null && !vehiculos.getValue().isEmpty()) || usuario.getValue() == null) {
             return; // Si ya están cargados, no hacer nada
         }
-        DataRepository.getInstance().obtenerVehiculosUsuario(usuario.getValue().getId(), new CallbackList<Vehiculo>() {
+        dataRepository.obtenerVehiculosUsuario(usuario.getValue().getId(), new CallbackList<Vehiculo>() {
             @Override
             public void onSuccess(List<Vehiculo> lista) {
                 Log.d("ReservasViewModel", "Vehiculos cargados correctamente: " + lista.toString());
@@ -121,7 +135,7 @@ public class ReservasViewModel extends AndroidViewModel {
 
 
     public void añadirVehiculo(Vehiculo nuevoVehiculo) {
-        DataRepository.getInstance().añadirVehiculoAUsuario(usuario.getValue(), nuevoVehiculo, new Callback() {
+        dataRepository.añadirVehiculoAUsuario(usuario.getValue(), nuevoVehiculo, new Callback() {
                     @Override
                     public void onSuccess() {
                         ArrayList<Vehiculo> listaActual = vehiculos.getValue();
@@ -145,7 +159,7 @@ public class ReservasViewModel extends AndroidViewModel {
     }
 
     public void reservarPlaza(Reserva reserva) {
-        DataRepository.getInstance().guardarReserva(usuario.getValue(), reserva, new Callback() {
+        dataRepository.guardarReserva(usuario.getValue(), reserva, new Callback() {
             @Override
             public void onSuccess() {
                 List<Reserva> listaActual = reservas.getValue();
@@ -168,7 +182,7 @@ public class ReservasViewModel extends AndroidViewModel {
     }
 
     public void obtenerPlazas(LocalDate dia) {
-        DataRepository.getInstance().obtenerPlazas(new CallbackList<Plaza>() {
+        dataRepository.obtenerPlazas(new CallbackList<Plaza>() {
             @Override
             public void onSuccess(List<Plaza> lista) {
                 plazas.setValue(lista);
@@ -194,7 +208,7 @@ public class ReservasViewModel extends AndroidViewModel {
         int totalPlazas = listaPlazas.size();
 
         for (Plaza plaza : listaPlazas) {
-            DataRepository.getInstance().getOrCreateHorarioPlaza(plaza, dia, new LoginCallback<HorarioPlaza>() {
+            dataRepository.getInstance().getOrCreateHorarioPlaza(plaza, dia, new LoginCallback<HorarioPlaza>() {
                 @Override
                 public void onSuccess(HorarioPlaza horarioPlaza) {
                     mapaHorarios.put(plaza, horarioPlaza);
@@ -226,7 +240,7 @@ public class ReservasViewModel extends AndroidViewModel {
             return;
         }
 
-        DataRepository.getInstance().editarReserva(user, reservaVieja, reservaNueva, new Callback() {
+        dataRepository.editarReserva(user, reservaVieja, reservaNueva, new Callback() {
             @Override
             public void onSuccess() {
                 List<Reserva> listaActual = reservas.getValue();
@@ -255,7 +269,7 @@ public class ReservasViewModel extends AndroidViewModel {
 
 
     public void cancelarReserva(Reserva reserva, Callback callback) {
-        DataRepository.getInstance().eliminarReserva(usuario.getValue(), reserva, new Callback() {
+        dataRepository.eliminarReserva(usuario.getValue(), reserva, new Callback() {
             @Override
             public void onSuccess() {
                 // Quitar la reserva eliminada de la lista LiveData
