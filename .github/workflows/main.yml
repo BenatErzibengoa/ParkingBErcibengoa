@@ -58,35 +58,35 @@ jobs:
 
       - name: Verify coverage report exists
         run: |
-          echo "🔍 Checking for JaCoCo report..."
+          echo " Checking for JaCoCo report..."
           if [ ! -f "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml" ]; then
-            echo "❌ Coverage report not found!"
-            echo "📁 Contents of app/build/reports/jacoco/:"
+            echo " Coverage report not found!"
+            echo " Contents of app/build/reports/jacoco/:"
             ls -la app/build/reports/jacoco/ || echo "Directory does not exist"
             exit 1
           else
-            echo "✅ Coverage report generated successfully"
-            echo "📄 Report contents:"
+            echo " Coverage report generated successfully"
+            echo " Report contents:"
             ls -la app/build/reports/jacoco/jacocoTestReport/
-            echo "📊 Report size:"
+            echo " Report size:"
             wc -l app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
-            echo "🔍 First 10 lines of XML report:"
+            echo " First 10 lines of XML report:"
             head -10 app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           fi
 
       - name: Debug SonarCloud configuration
         run: |
-          echo "🔍 SonarCloud configuration debug:"
-          echo "📁 Current directory: $(pwd)"
-          echo "📄 Checking if classes directory exists:"
+          echo " SonarCloud configuration debug:"
+          echo " Current directory: $(pwd)"
+          echo " Checking if classes directory exists:"
           ls -la app/build/intermediates/javac/debug/classes/ || echo "Classes directory not found"
-          echo "📄 Checking if report file exists:"
+          echo " Checking if report file exists:"
           ls -la app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "File not found"
-          echo "📊 File content preview:"
+          echo " File content preview:"
           head -5 app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "Cannot read file"
-          echo "🔍 Checking build directory structure:"
+          echo " Checking build directory structure:"
           find app/build -name "*.class" | head -10 || echo "No .class files found"
-          echo "🔍 Checking if build directory exists:"
+          echo " Checking if build directory exists:"
           ls -la app/build/ || echo "Build directory not found"
 
       - name: Build project
@@ -94,17 +94,17 @@ jobs:
 
       - name: Verify classes are compiled
         run: |
-          echo "🔍 Verifying compiled classes exist..."
+          echo " Verifying compiled classes exist..."
           if [ ! -d "app/build/intermediates/javac/debug/classes" ]; then
-            echo "❌ Classes directory not found, trying to compile..."
+            echo " Classes directory not found, trying to compile..."
             ./gradlew compileDebugJavaWithJavac --info
           else
-            echo "✅ Classes directory exists"
+            echo " Classes directory exists"
             ls -la app/build/intermediates/javac/debug/classes/
           fi
 
-      - name: Build and analyze with Sonar
+      - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew sonarqube --info
+        run: ./gradlew build :app:koverXmlReport sonarqube --info
