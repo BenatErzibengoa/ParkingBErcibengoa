@@ -44,10 +44,10 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
         property "sonar.java.coveragePlugin", "jacoco"
-        property "sonar.sources", "app/src/main/java"
-        property "sonar.tests", "app/src/test/java/com/lksnext/parkingbercibengoa"
-        property "sonar.java.binaries", "app/build/intermediates/javac/debug/classes"
-        property "sonar.java.test.binaries", "app/build/intermediates/javac/debug/classes"
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+        property "sonar.java.binaries", "build/intermediates/javac/debug/classes"
+        property "sonar.java.test.binaries", "build/intermediates/javac/debug/classes"
     }
 }
 
