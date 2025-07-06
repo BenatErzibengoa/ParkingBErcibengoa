@@ -47,6 +47,9 @@ jobs:
       - name: Set Gradle wrapper permissions
         run: chmod +x ./gradlew
 
+      - name: Compile project
+        run: ./gradlew compileDebugJavaWithJavac --info
+
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --info
 
@@ -75,6 +78,8 @@ jobs:
         run: |
           echo "🔍 SonarCloud configuration debug:"
           echo "📁 Current directory: $(pwd)"
+          echo "📄 Checking if classes directory exists:"
+          ls -la app/build/intermediates/javac/debug/classes/ || echo "Classes directory not found"
           echo "📄 Checking if report file exists:"
           ls -la app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "File not found"
           echo "📊 File content preview:"

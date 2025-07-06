@@ -96,7 +96,7 @@ jacoco {
     toolVersion = "0.8.10"
 }
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+task jacocoTestReport(type: JacocoReport, dependsOn: ['compileDebugJavaWithJavac', 'testDebugUnitTest']) {
     group = "Reporting"
     description = "Generate Jacoco coverage reports after running tests."
 
@@ -130,7 +130,8 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
     ]))
     
     doLast {
-        println "JaCoCo report generated at: ${reports.xml.destination}"
-        println "JaCoCo HTML report at: ${reports.html.destination}"
+        println "JaCoCo report generated successfully"
+        println "XML report location: app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        println "HTML report location: app/build/reports/jacoco/jacocoTestReport/index.html"
     }
 }
