@@ -2,7 +2,7 @@
 Esta aplicación ha sido desarrollada en el aula de empresa de LKS NEXT en colaboración con la UPV/EHU, dentro de la Facultad de Informática.
 Su propósito es permitir a los usuarios reservar plazas en un parking.
 
-El usuario deberá registrarse para poder realizar cualquier acción. Una vez registrado, puede registrar sus vehículos y realizar reservas a nombre de cada uno de ellos.
+El usuario deberá registrarse para poder realizar cualquier acción. Una vez registrado, puede añadir  sus vehículos y realizar reservas a nombre de cada uno de ellos.
 La interfaz gráfica de la aplicación muestra visualmente las plazas disponibles dentro del aparcamiento, clasificadas por tipo:
 - Plaza para coche
 - Plaza para vehículo eléctrico
@@ -13,7 +13,7 @@ La aplicación permite al usuario consultar sus reservas activas y revisar el hi
 Además, la aplicación envía notificaciones al usuario 30 minutos y 15 minutos antes del inicio de cada reserva.
 
 # Tecnología
-La aplicación fue diseñada inicialmente en Figma, donde se definió la interfaz de usuario con un enfoque centrado en la experiencia del usuario y la claridad visual. Una vez creado el Figma, se ha utilizado Android Studio como entorno de desarrollo, Java como lenguaje principal y XML para la interfaz gráfica. 
+La aplicación fue diseñada inicialmente en Figma, donde se definió la interfaz de usuario con un enfoque centrado en la experiencia del usuario y la claridad visual. Una vez creado el diseño en Figma, se ha utilizado Android Studio como entorno de desarrollo, Java como lenguaje principal y XML para la interfaz gráfica. 
 
 La autenticación de usuarios se gestiona con Firebase Authentication, permitiendo un inicio de sesión seguro y confiable. Toda la información de usuarios, vehículos, reservas y plazas se almacena de forma segura en la nube mediante Cloud Firestore de Firebase. 
 
@@ -22,7 +22,7 @@ Para garantizar la calidad del código, se ha integrado SonarQube, lo que permit
 
  
 # Capturas de pantalla
-Estas son algunas capturas de pantalla de las funcionalidades principales de la aplicación
+Estas son algunas capturas de pantalla de las funcionalidades principales de la aplicación:
 
 ## Login
 ![Screenshot_20250706_221342](https://github.com/user-attachments/assets/841f5e76-c7a2-4698-b5e1-9d3cbd5ae7f6)
@@ -42,9 +42,4 @@ Además, se proporciona una **cuenta de prueba** para que puedas comprobar el fu
 
 - **Correo electrónico:** `bengoaerzi@gmail.com`  
 - **Contraseña:** `admin1234`
-
-
-
-
-
-
+- 
