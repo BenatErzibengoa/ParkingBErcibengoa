@@ -17,6 +17,7 @@ public class LoginViewModel extends ViewModel {
     private final MutableLiveData<String> error = new MutableLiveData<>(null);
     private final AuthRepository authRepository;
 
+    //Constructor esencial, si se borra crashea
     public LoginViewModel() {
         this.authRepository = new com.lksnext.parkingbercibengoa.data.FirebaseAuthRepository();
     }

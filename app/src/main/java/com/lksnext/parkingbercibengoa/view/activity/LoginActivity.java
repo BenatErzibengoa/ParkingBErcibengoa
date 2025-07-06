@@ -23,10 +23,8 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.FirebaseApp;
-import com.lksnext.parkingbercibengoa.configuration.SessionManager;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.ActivityLoginBinding;
-import com.lksnext.parkingbercibengoa.domain.Usuario;
 import com.lksnext.parkingbercibengoa.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
@@ -42,11 +40,6 @@ public class LoginActivity extends AppCompatActivity {
         LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
-        //TODO: BORRAR ESTAS DOS LINEAS AL FINALIZAR
-        binding.emailText.setText("bengoaerzi@gmail.com");
-        binding.passwordText.setText("admin1234");
-
 
         // Intentar logearse
         binding.loginButton.setOnClickListener(v -> {
@@ -94,6 +87,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        //Para la visibilidad (hora, notificaciones, bateria)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);

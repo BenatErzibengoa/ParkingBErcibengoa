@@ -2,24 +2,11 @@ package com.lksnext.parkingbercibengoa.data;
 
 import android.util.Log;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.FirebaseNetworkException;
-import com.google.firebase.FirebaseTooManyRequestsException;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.WriteBatch;
 import com.lksnext.parkingbercibengoa.data.firebase.HorarioPlazaDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.ReservaDTO;
-import com.lksnext.parkingbercibengoa.data.firebase.UsuarioDTO;
 import com.lksnext.parkingbercibengoa.data.firebase.VehiculoDTO;
 import com.lksnext.parkingbercibengoa.domain.Callback;
 import com.lksnext.parkingbercibengoa.domain.CallbackList;
@@ -37,14 +24,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class DataRepository {
-    private static final String SERVER_ERROR = "server_error";
     private static DataRepository instance;
-    private final FirebaseAuth mauth = FirebaseAuth.getInstance();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
 
     private DataRepository(){
     }
@@ -54,89 +37,6 @@ public class DataRepository {
             instance = new DataRepository();
         }
         return instance;
-    }
-
-    public void login(String email, String pass, LoginCallback callback){
-        mauth.signInWithEmailAndPassword(email, pass)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        String uid = mauth.getCurrentUser().getUid();
-                        obtenerUsuario(uid, callback);
-                    } else {
-                        Exception exception = task.getException();
-                        String errorCode = parseFirebaseError(exception);
-                        callback.onFailure(errorCode);
-                    }
-                });
-    }
-
-    public void register(String fullname, String email, String contraseña, Callback callback) {
-        FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(email, contraseña)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-                        if (firebaseUser == null) {
-                            callback.onFailure("USER_NULL_ERROR");
-                            return;
-                        }
-
-                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(fullname)
-                                .build();
-
-                        firebaseUser.updateProfile(profileUpdates).addOnCompleteListener(profileUpdateTask -> {
-                            if (profileUpdateTask.isSuccessful()) {
-                                FirebaseFirestore.getInstance()
-                                        .collection("usuarios")
-                                        .document(firebaseUser.getUid())  // es importante que sea UID y no el email, si no puede dar error
-                                        .set(UsuarioDTO.toMap(new Usuario(fullname, email)))
-                                        .addOnSuccessListener(aVoid -> callback.onSuccess())
-                                        .addOnFailureListener(e -> callback.onFailure("DB_WRITE_ERROR"));
-                            } else {
-                                callback.onFailure("PROFILE_UPDATE_ERROR");
-                            }
-                        });
-                    } else {
-                        Exception exception = task.getException();
-                        String errorCode = parseFirebaseError(exception);
-                        callback.onFailure(errorCode);
-                    }
-                });
-    }
-
-    public void changePassword(String email, Callback callback){
-        mauth.getInstance().sendPasswordResetEmail(email)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        callback.onSuccess();
-                    } else {
-                        Exception exception = task.getException();
-                        String errorCode = parseFirebaseError(exception);
-                        callback.onFailure(errorCode);
-                    }
-                });
-    }
-
-    public void obtenerUsuario(String uid, LoginCallback callback) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("usuarios")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Map<String, Object> data = documentSnapshot.getData();
-                        Usuario usuario = UsuarioDTO.fromMap(data);
-                        usuario.setId(uid);
-                        callback.onSuccess(usuario);
-                    } else {
-                        callback.onFailure("ERROR_USER_NOT_FOUND");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    callback.onFailure(e.getMessage());
-                });
     }
 
     public void obtenerVehiculosUsuario(String uid, CallbackList<Vehiculo> callback) {
@@ -362,78 +262,6 @@ public class DataRepository {
                 callback.onFailure("Error al eliminar la reserva antigua: " + msg);
             }
         });
-    }
-
-
-    public void eliminarTodosLosHorariosDeTodasLasPlazas(Callback callback) {
-        db.collection("plazas").get().addOnSuccessListener(plazasSnapshot -> {
-            List<Task<Void>> tareas = new ArrayList<>();
-
-            for (DocumentSnapshot plazaDoc : plazasSnapshot.getDocuments()) {
-                String plazaId = plazaDoc.getId();
-                CollectionReference horariosRef = db.collection("plazas").document(plazaId).collection("horarios");
-
-                Task<Void> tarea = horariosRef.get().continueWithTask(horariosTask -> {
-                    WriteBatch batch = db.batch();
-                    for (DocumentSnapshot horarioDoc : horariosTask.getResult()) {
-                        batch.delete(horarioDoc.getReference());
-                    }
-                    return batch.commit(); // devuelve Task<Void>
-                });
-
-                tareas.add(tarea);
-            }
-
-            Tasks.whenAllComplete(tareas)
-                    .addOnSuccessListener(results -> callback.onSuccess())
-                    .addOnFailureListener(e -> callback.onFailure("Error al eliminar horarios: " + e.getMessage()));
-
-        }).addOnFailureListener(e -> callback.onFailure("Error al obtener plazas: " + e.getMessage()));
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private String parseFirebaseError(Exception exception) {
-        if (exception == null) return "unknown_error";
-
-        if (exception instanceof FirebaseAuthUserCollisionException) {
-            return "ERROR_EMAIL_ALREADY_IN_USE";
-        }
-
-        if (exception instanceof FirebaseAuthInvalidCredentialsException) {
-            return "ERROR_WRONG_PASSWORD";
-        }
-
-        if (exception instanceof FirebaseTooManyRequestsException) {
-            return "ERROR_TOO_MANY_REQUESTS";
-        }
-
-        if (exception instanceof FirebaseNetworkException) {
-            return "no_connection";
-        }
-
-        if (exception instanceof FirebaseAuthException) {
-            String errorCode = ((FirebaseAuthException) exception).getErrorCode();
-            return errorCode != null ? errorCode : SERVER_ERROR;
-        }
-
-        String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
-        if (message.contains("network")) {
-            return "no_connection";
-        }
-
-        return SERVER_ERROR;
     }
 
 }

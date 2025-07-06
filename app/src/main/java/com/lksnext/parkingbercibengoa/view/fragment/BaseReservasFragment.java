@@ -73,15 +73,21 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
         }
 
         LocalDate hoy = LocalDate.now();
+        LocalDate hace30Dias = hoy.minusDays(30);
 
         // Filtrar reservas según si son futuras o pasadas
         List<Reserva> reservasFiltradas = reservas.stream()
                 .filter(r -> {
                     LocalDate fecha = r.getFechaInicio().toLocalDate();
-                    return esFuturo ? !fecha.isBefore(hoy) : fecha.isBefore(hoy);
+                    if (esFuturo) {
+                        return !fecha.isBefore(hoy);  // Muestra solo las reservas futuras
+                    } else {
+                        return fecha.isBefore(hoy) && !fecha.isBefore(hace30Dias);  // Muestra solo reservas pasadas de los últimos 30 días
+                    }
                 })
                 .collect(Collectors.toList());
 
+        //No deberia ejecutarse, pero por si acaso
         if (reservasFiltradas.isEmpty()) {
             TextView textNoReservas = new TextView(getContext());
             textNoReservas.setText("No hay reservas " + (esFuturo ? "futuras" : "pasadas"));
@@ -92,6 +98,8 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
             getContainerReservas().addView(textNoReservas);
             return;
         }
+
+        //Agrupamos las reservas en grupos (mismo grupo si son del mismo dia)
 
         Comparator<LocalDate> comparator = esFuturo ? Comparator.naturalOrder() : Comparator.reverseOrder();
         Map<LocalDate, List<Reserva>> reservasPorFecha = reservasFiltradas.stream()
@@ -135,6 +143,7 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
     }
 
     //Este metodo sirve para que reservasFragment pueda configurar listeners de click por cada reserva
+    //Aqui no hace falta definirlo
     protected void configurarListenersReserva(ReservaItemBinding card, Reserva reserva, boolean esFuturo) {
     }
 

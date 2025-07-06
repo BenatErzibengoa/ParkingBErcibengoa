@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-        //Si el appbar tiene titulo, borrarlo
+        //Si el appbar tiene titulo, borrarlo (a veces salía un titulo en el fondo medio escondido)
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("");
         }
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+
+        //Visibilidad de la barra de notificaciones
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -113,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
 
             //Limpiar viewmodel
             ReservasViewModelFactory.clearInstance();
-
 
             //  Ir a LoginActivity
             Intent intent = new Intent(this, LoginActivity.class);

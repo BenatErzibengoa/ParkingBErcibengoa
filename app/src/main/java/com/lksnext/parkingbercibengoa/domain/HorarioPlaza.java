@@ -22,7 +22,7 @@ public class HorarioPlaza {
         if (fechaInicio.toLocalDate().equals(fechaFin.toLocalDate())) {
             return realizarReserva(fechaInicio, duracion);
         } else {
-            HorarioPlaza horarioPlazaSiguienteDia = null; //TODO: Esto se debe obtener mediante la base de datos
+            HorarioPlaza horarioPlazaSiguienteDia = null;
             // Dividir la reserva en dos días
             Duration duracionDia1 = Duration.between(fechaInicio, fechaInicio.toLocalDate().plusDays(1).atStartOfDay());
             Duration duracionDia2 = Duration.between(fechaInicio.toLocalDate().plusDays(1).atStartOfDay(), fechaFin);
@@ -58,7 +58,7 @@ public class HorarioPlaza {
             cancelarReserva(inicioViejo, duracionDia1);
 
             // Cancelar el tramo del segundo día (debe obtenerse el HorarioPlaza correspondiente al día siguiente)
-            HorarioPlaza horarioPlazaSiguienteDia = null; // TODO: Obtener desde la base de datos o contexto adecuado
+            HorarioPlaza horarioPlazaSiguienteDia = null;
             LocalDateTime inicioDia2 = inicioViejo.toLocalDate().plusDays(1).atStartOfDay();
             Duration duracionDia2 = Duration.between(inicioDia2, finViejo);
             if (horarioPlazaSiguienteDia != null) {

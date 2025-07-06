@@ -110,7 +110,7 @@ public class SeleccionarPlazaFragment extends Fragment {
             activity.setSupportActionBar(toolbar);
             if (activity.getSupportActionBar() != null) {
                 activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                activity.getSupportActionBar().setTitle("Seleccionar plaza");
+                //activity.getSupportActionBar().setTitle("Seleccionar plaza");
             }
         }
 

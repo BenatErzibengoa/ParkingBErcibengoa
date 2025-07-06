@@ -1,6 +1,11 @@
 package com.lksnext.parkingbercibengoa.data;
 
+import com.google.firebase.FirebaseNetworkException;
+import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -14,6 +19,9 @@ import java.util.Map;
 public class FirebaseAuthRepository implements AuthRepository {
     private final FirebaseAuth firebaseAuth;
     private final FirebaseFirestore firestore;
+
+    private static final String SERVER_ERROR = "server_error";
+
 
     public FirebaseAuthRepository() {
         this.firebaseAuth = FirebaseAuth.getInstance();
@@ -105,16 +113,34 @@ public class FirebaseAuthRepository implements AuthRepository {
     }
 
     private String parseFirebaseError(Exception exception) {
-        if (exception instanceof com.google.firebase.auth.FirebaseAuthInvalidCredentialsException) {
-            return "INVALID_CREDENTIALS";
-        } else if (exception instanceof com.google.firebase.auth.FirebaseAuthUserCollisionException) {
-            return "USER_COLLISION";
-        } else if (exception instanceof com.google.firebase.FirebaseNetworkException) {
-            return "NETWORK_ERROR";
-        } else if (exception instanceof com.google.firebase.FirebaseTooManyRequestsException) {
-            return "TOO_MANY_REQUESTS";
-        } else {
-            return "UNKNOWN_ERROR";
+        if (exception == null) return "unknown_error";
+
+        if (exception instanceof FirebaseAuthUserCollisionException) {
+            return "ERROR_EMAIL_ALREADY_IN_USE";
         }
+
+        if (exception instanceof FirebaseAuthInvalidCredentialsException) {
+            return "ERROR_WRONG_PASSWORD";
+        }
+
+        if (exception instanceof FirebaseTooManyRequestsException) {
+            return "ERROR_TOO_MANY_REQUESTS";
+        }
+
+        if (exception instanceof FirebaseNetworkException) {
+            return "no_connection";
+        }
+
+        if (exception instanceof FirebaseAuthException) {
+            String errorCode = ((FirebaseAuthException) exception).getErrorCode();
+            return errorCode != null ? errorCode : SERVER_ERROR;
+        }
+
+        String message = exception.getMessage() != null ? exception.getMessage().toLowerCase() : "";
+        if (message.contains("network")) {
+            return "no_connection";
+        }
+
+        return SERVER_ERROR;
     }
 }

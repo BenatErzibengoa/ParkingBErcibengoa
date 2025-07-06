@@ -57,7 +57,7 @@ public class ReservasViewModel extends AndroidViewModel {
         this.dataRepository = DataRepository.getInstance();
         Context context = application.getApplicationContext();
         SessionManager sessionManager = new SessionManager(context);
-        usuario.postValue(sessionManager.getUsuario());
+        usuario.setValue(sessionManager.getUsuario());
     }
 
     // Solo para testing
