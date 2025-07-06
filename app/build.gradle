@@ -2,7 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'org.sonarqube'                  // Sonar
 apply plugin: 'com.google.gms.google-services' // Firebase
-apply plugin: 'jacoco'                         // JaCoCo para cobertura
+apply plugin: 'org.jetbrains.kotlinx.kover'
+
 
 
 android {
@@ -92,80 +93,3 @@ dependencies {
 
 }
 
-// Configuración de JaCoCo para reportes de cobertura
-jacoco {
-    toolVersion = "0.8.10"
-}
-
-task jacocoTestReport(type: JacocoReport, dependsOn: ['compileDebugJavaWithJavac', 'testDebugUnitTest']) {
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports after running tests."
-
-    reports {
-        xml.required = true
-        html.required = true
-    }
-
-    def fileFilter = [
-        '**/R.class',
-        '**/R$*.class',
-        '**/BuildConfig.*',
-        '**/Manifest*.*',
-        '**/*Test*.*',
-        'android/**/*.*',
-        '**/databinding/**/*.*',
-        '**/BR.class'
-    ]
-
-    def debugTree = fileTree(
-        dir: "$buildDir/intermediates/javac/debug/classes",
-        excludes: fileFilter
-    )
-
-    def mainSrc = "$projectDir/src/main/java"
-
-    sourceDirectories.setFrom(files([mainSrc]))
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: buildDir, includes: [
-        "jacoco/testDebugUnitTest.exec"
-    ]))
-    
-    doLast {
-        println "JaCoCo report generated successfully"
-        println "XML report location: app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        println "HTML report location: app/build/reports/jacoco/jacocoTestReport/index.html"
-    }
-}
-
-// Tarea alternativa más simple
-task jacocoTestReportSimple(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
-    group = "Reporting"
-    description = "Generate simple JaCoCo coverage reports."
-
-    reports {
-        xml.required = true
-        html.required = true
-    }
-
-    def fileFilter = [
-        '**/R.class',
-        '**/R$*.class',
-        '**/BuildConfig.*',
-        '**/Manifest*.*',
-        '**/*Test*.*',
-        'android/**/*.*'
-    ]
-
-    def debugTree = fileTree(
-        dir: "$buildDir/intermediates/javac/debug/classes",
-        excludes: fileFilter
-    )
-
-    def mainSrc = "$projectDir/src/main/java"
-
-    sourceDirectories.setFrom(files([mainSrc]))
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: buildDir, includes: [
-        "jacoco/testDebugUnitTest.exec"
-    ]))
-}

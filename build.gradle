@@ -11,12 +11,17 @@ buildscript {
 
     }
 }
-
+plugins {
+    id("org.jetbrains.kotlinx.kover") version "0.7.3" apply false
+}
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
 }
+
+
+
 
 
