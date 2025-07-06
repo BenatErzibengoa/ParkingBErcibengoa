@@ -48,20 +48,37 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testDebugUnitTest --info
 
       - name: Generate JaCoCo coverage report
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew jacocoTestReport --info
 
       - name: Verify coverage report exists
         run: |
+          echo "🔍 Checking for JaCoCo report..."
           if [ ! -f "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml" ]; then
             echo "❌ Coverage report not found!"
+            echo "📁 Contents of app/build/reports/jacoco/:"
+            ls -la app/build/reports/jacoco/ || echo "Directory does not exist"
             exit 1
           else
             echo "✅ Coverage report generated successfully"
+            echo "📄 Report contents:"
             ls -la app/build/reports/jacoco/jacocoTestReport/
+            echo "📊 Report size:"
+            wc -l app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            echo "🔍 First 10 lines of XML report:"
+            head -10 app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           fi
+
+      - name: Debug SonarCloud configuration
+        run: |
+          echo "🔍 SonarCloud configuration debug:"
+          echo "📁 Current directory: $(pwd)"
+          echo "📄 Checking if report file exists:"
+          ls -la app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "File not found"
+          echo "📊 File content preview:"
+          head -5 app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "Cannot read file"
 
       - name: Build project
         run: ./gradlew build

@@ -44,6 +44,10 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
         property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.sources", "app/src/main/java"
+        property "sonar.tests", "app/src/test/java"
+        property "sonar.java.binaries", "app/build/intermediates/javac/debug/classes"
+        property "sonar.java.test.binaries", "app/build/intermediates/javac/debug/classes"
     }
 }
 
@@ -107,7 +111,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
         '**/BuildConfig.*',
         '**/Manifest*.*',
         '**/*Test*.*',
-        'android/**/*.*'
+        'android/**/*.*',
+        '**/databinding/**/*.*',
+        '**/BR.class'
     ]
 
     def debugTree = fileTree(
@@ -122,4 +128,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
     executionData.setFrom(fileTree(dir: buildDir, includes: [
         "jacoco/testDebugUnitTest.exec"
     ]))
+    
+    doLast {
+        println "JaCoCo report generated at: ${reports.xml.destination}"
+        println "JaCoCo HTML report at: ${reports.html.destination}"
+    }
 }
