@@ -6,6 +6,8 @@ import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.ELECTRICO;
 import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.MOTO;
 
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -20,6 +22,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import com.lksnext.parkingbercibengoa.R;
 import com.lksnext.parkingbercibengoa.configuration.Utils;
 import com.lksnext.parkingbercibengoa.databinding.FragmentSeleccionarPlazaBinding;
@@ -45,6 +50,9 @@ public class SeleccionarPlazaFragment extends Fragment {
     private View currentSelectedView = null;
     private List<Plaza> plazas;
 
+    NavController navController;
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -56,7 +64,13 @@ public class SeleccionarPlazaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
+        if(viewModel.getReservaAEditar().getValue() != null){
+            binding.reservarButton.setText("Editar reserva");
+        }
+        navController = Navigation.findNavController(requireActivity(), R.id.flFragment);
+
 
         viewModel.getPlazas().observe(getViewLifecycleOwner(), plazas -> {
             Log.d("SeleccionarPlazaFragment", "plazas cargadas ");
@@ -101,8 +115,8 @@ public class SeleccionarPlazaFragment extends Fragment {
         }
 
         toolbar.setNavigationOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
+            if (navController != null) {
+                navController.popBackStack();
             }
         });
     }
@@ -239,29 +253,37 @@ public class SeleccionarPlazaFragment extends Fragment {
             LocalDateTime fin = viewModel.gethoraFin().getValue();
             Duration duracion = Duration.between(inicio, fin);
 
-            Reserva reserva = new Reserva(
-                    java.util.UUID.randomUUID().toString(),
-                    usuario,
-                    vehiculo,
-                    inicio,
-                    duracion,
-                    selectedSpot
-            );
+            boolean estaEditando = viewModel.getReservaAEditar().getValue() != null;
 
-            viewModel.reservarPlaza(reserva);
+            Reserva reserva = new Reserva(java.util.UUID.randomUUID().toString(), usuario, vehiculo, inicio, duracion, selectedSpot);
+
+
+            if (estaEditando) {
+                Reserva reservaVieja = viewModel.getReservaAEditar().getValue();
+                reserva.setFechaInicio(inicio);
+                reserva.setDuracion(duracion);
+                reserva.setPlaza(selectedSpot);
+                viewModel.editarReserva(reservaVieja, reserva);
+                viewModel.setReservaAEditar(null);
+            } else {
+                viewModel.reservarPlaza(reserva);
+            }
+
+            Utils.programarNotificaciones(requireContext(), reserva);
 
             new AlertDialog.Builder(requireContext())
-                    .setTitle("¡Reserva confirmada!")
+                    .setTitle(estaEditando ? "¡Reserva actualizada!" : "¡Reserva confirmada!")
                     .setMessage("Plaza: " + selectedSpot.getId() + "\nFecha: " +
                                 Utils.parseSeleccionPlazaFecha(inicio) + "\nHorario: " +
                                 Utils.parseSeleccionPlazaHora(inicio, fin))
                     .setPositiveButton("OK", null)
                     .show();
 
-            requireActivity().getSupportFragmentManager().popBackStack();
-            requireActivity().getSupportFragmentManager().popBackStack();
+            navController.popBackStack();
+            navController.popBackStack();
         }
     }
+
 
     @Override
     public void onDestroyView() {

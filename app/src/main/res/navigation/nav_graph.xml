@@ -1,20 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/reservasFragment">
 
+    <!-- Reservas -->
     <fragment
         android:id="@+id/reservasFragment"
         android:name="com.lksnext.parkingbercibengoa.view.fragment.ReservasFragment"
-        android:label="@string/fragment_reservas"
-        tools:layout="@layout/fragment_reservas" />
+        android:label="Reservas">
+        <action
+            android:id="@+id/action_reservasFragment_to_nuevaReservaFragment"
+            app:destination="@id/nuevaReservaFragment" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/nuevaReservaFragment"
+        android:name="com.lksnext.parkingbercibengoa.view.fragment.NuevaReservaFragment"
+        android:label="Nueva Reserva">
+        <action
+            android:id="@+id/action_nuevaReservaFragment_to_nuevoVehiculoFragment"
+            app:destination="@id/nuevoVehiculoFragment" />
+        <action
+            android:id="@+id/action_nuevaReservaFragment_to_seleccionarPlazaFragment"
+            app:destination="@id/seleccionarPlazaFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nuevoVehiculoFragment"
+        android:name="com.lksnext.parkingbercibengoa.view.fragment.NuevoVehiculoFragment"
+        android:label="Nuevo Vehículo">
+        <action
+            android:id="@+id/action_nuevoVehiculoFragment_to_nuevaReservaFragment"
+            app:destination="@id/nuevaReservaFragment"
+            app:popUpTo="@id/nuevaReservaFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/seleccionarPlazaFragment"
+        android:name="com.lksnext.parkingbercibengoa.view.fragment.SeleccionarPlazaFragment"
+        android:label="Seleccionar Plaza" />
+
+    <!-- Historial -->
     <fragment
         android:id="@+id/historialFragment"
         android:name="com.lksnext.parkingbercibengoa.view.fragment.HistorialFragment"
-        android:label="@string/fragment_historial"
-        tools:layout="@layout/fragment_historial" />
-
+        android:label="Historial" />
 </navigation>

@@ -6,13 +6,14 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import com.lksnext.parkingbercibengoa.databinding.FragmentHistorialBinding;
-import com.lksnext.parkingbercibengoa.viewmodel.HistorialViewModel;
+import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModel;
+import com.lksnext.parkingbercibengoa.viewmodel.ReservasViewModelFactory;
 
 
-public class HistorialFragment extends BaseReservasFragment<HistorialViewModel> {
+public class HistorialFragment extends BaseReservasFragment<ReservasViewModel> {
 
     private FragmentHistorialBinding binding;
-    private HistorialViewModel viewModel;
+    private ReservasViewModel viewModel;
 
     @Override
     protected View inflarLayout(LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -26,21 +27,19 @@ public class HistorialFragment extends BaseReservasFragment<HistorialViewModel> 
     }
 
     @Override
-    protected HistorialViewModel getViewModel() {
+    protected ReservasViewModel getViewModel() {
         if (viewModel == null)
-            viewModel = new ViewModelProvider(this).get(HistorialViewModel.class);
+            viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         return viewModel;
     }
 
     @Override
     protected void observarReservas() {
         getViewModel().getReservas().observe(getViewLifecycleOwner(),
-                reservas -> mostrarReservas(reservas, true)); // orden descendente
+                reservas -> mostrarReservas(reservas, false));
         getViewModel().cargarReservasDelUsuario();
     }
 
     @Override
-    protected void onExtraViewReady() {
-        // Nada que hacer aquí por ahora
-    }
+    protected void onExtraViewReady() {}
 }

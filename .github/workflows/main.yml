@@ -47,8 +47,27 @@ jobs:
       - name: Set Gradle wrapper permissions
         run: chmod +x ./gradlew
 
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Generate JaCoCo coverage report
+        run: ./gradlew jacocoTestReport
+
+      - name: Verify coverage report exists
+        run: |
+          if [ ! -f "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml" ]; then
+            echo "❌ Coverage report not found!"
+            exit 1
+          else
+            echo "✅ Coverage report generated successfully"
+            ls -la app/build/reports/jacoco/jacocoTestReport/
+          fi
+
+      - name: Build project
+        run: ./gradlew build
+
       - name: Build and analyze with Sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build sonarqube --info
+        run: ./gradlew sonarqube --info

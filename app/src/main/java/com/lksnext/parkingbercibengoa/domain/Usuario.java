@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-public class Usuario {
+public class Usuario  {
     private String id;
     private String nombre;
     private String email;

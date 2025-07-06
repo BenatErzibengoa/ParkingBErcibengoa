@@ -53,13 +53,48 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
         observarReservas();
     }
 
-    protected void mostrarReservas(List<Reserva> reservas, boolean ordenDescendente) {
+    //Este metodo mediante el boolean esFuturo sirve para dadas unas reservas mostrarlas como futuras
+    //reservas o reservas del pasado basandose en que día es hoy. El orden en el que muestra dichas reservas
+    //cambia(futuro --> hoy, mañana... // pasado --> hoy, ayer...
+    protected void mostrarReservas(List<Reserva> reservas, boolean esFuturo) {
         getContainerReservas().removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
-        Comparator<LocalDate> comparator = ordenDescendente ? Comparator.reverseOrder() : Comparator.naturalOrder();
+        // Si no hay reservas, mostrar mensaje
+        if (reservas == null || reservas.isEmpty()) {
+            TextView textNoReservas = new TextView(getContext());
+            textNoReservas.setText("No hay reservas");
+            textNoReservas.setTextSize(16);
+            textNoReservas.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+            textNoReservas.setGravity(android.view.Gravity.CENTER);
+            textNoReservas.setPadding(16, 32, 16, 32);
+            getContainerReservas().addView(textNoReservas);
+            return;
+        }
 
-        Map<LocalDate, List<Reserva>> reservasPorFecha = reservas.stream()
+        LocalDate hoy = LocalDate.now();
+
+        // Filtrar reservas según si son futuras o pasadas
+        List<Reserva> reservasFiltradas = reservas.stream()
+                .filter(r -> {
+                    LocalDate fecha = r.getFechaInicio().toLocalDate();
+                    return esFuturo ? !fecha.isBefore(hoy) : fecha.isBefore(hoy);
+                })
+                .collect(Collectors.toList());
+
+        if (reservasFiltradas.isEmpty()) {
+            TextView textNoReservas = new TextView(getContext());
+            textNoReservas.setText("No hay reservas " + (esFuturo ? "futuras" : "pasadas"));
+            textNoReservas.setTextSize(16);
+            textNoReservas.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+            textNoReservas.setGravity(android.view.Gravity.CENTER);
+            textNoReservas.setPadding(16, 32, 16, 32);
+            getContainerReservas().addView(textNoReservas);
+            return;
+        }
+
+        Comparator<LocalDate> comparator = esFuturo ? Comparator.naturalOrder() : Comparator.reverseOrder();
+        Map<LocalDate, List<Reserva>> reservasPorFecha = reservasFiltradas.stream()
                 .collect(Collectors.groupingBy(
                         r -> r.getFechaInicio().toLocalDate(),
                         () -> new TreeMap<>(comparator),
@@ -92,10 +127,17 @@ public abstract class BaseReservasFragment<T extends ViewModel> extends Fragment
                     card.etiquetaTipo.setBackground(drawable);
                 }
 
+                configurarListenersReserva(card, r, esFuturo);
+
                 getContainerReservas().addView(card.getRoot());
             }
         }
     }
+
+    //Este metodo sirve para que reservasFragment pueda configurar listeners de click por cada reserva
+    protected void configurarListenersReserva(ReservaItemBinding card, Reserva reserva, boolean esFuturo) {
+    }
+
 
     @Override
     public void onDestroyView() {
