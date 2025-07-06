@@ -135,3 +135,36 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['compileDebugJavaWithJavac
         println "HTML report location: app/build/reports/jacoco/jacocoTestReport/index.html"
     }
 }
+
+// Tarea alternativa más simple
+task jacocoTestReportSimple(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+    group = "Reporting"
+    description = "Generate simple JaCoCo coverage reports."
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*'
+    ]
+
+    def debugTree = fileTree(
+        dir: "$buildDir/intermediates/javac/debug/classes",
+        excludes: fileFilter
+    )
+
+    def mainSrc = "$projectDir/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        "jacoco/testDebugUnitTest.exec"
+    ]))
+}
