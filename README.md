@@ -42,4 +42,3 @@ Además, se proporciona una **cuenta de prueba** para que puedas comprobar el fu
 
 - **Correo electrónico:** `bengoaerzi@gmail.com`  
 - **Contraseña:** `admin1234`
-- 
