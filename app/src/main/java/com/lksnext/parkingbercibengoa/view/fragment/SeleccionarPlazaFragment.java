@@ -6,6 +6,8 @@ import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.ELECTRICO;
 import static com.lksnext.parkingbercibengoa.domain.TipoVehiculo.MOTO;
 
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -62,6 +64,7 @@ public class SeleccionarPlazaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         viewModel = ReservasViewModelFactory.getSharedInstance(requireActivity().getApplication());
         if(viewModel.getReservaAEditar().getValue() != null){
             binding.reservarButton.setText("Editar reserva");
@@ -267,7 +270,6 @@ public class SeleccionarPlazaFragment extends Fragment {
             }
 
             Utils.programarNotificaciones(requireContext(), reserva);
-
 
             new AlertDialog.Builder(requireContext())
                     .setTitle(estaEditando ? "¡Reserva actualizada!" : "¡Reserva confirmada!")

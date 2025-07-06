@@ -124,6 +124,16 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
+    public static void programarNotificacionesPrueba(Context context, Reserva reserva) {
+        long triggerEn5Segundos = System.currentTimeMillis() + 5 * 1000;
+
+        Log.d("Notificacion", "Programando notificación de prueba para dentro de 5 segundos");
+
+        programarNotificacion(context, reserva, triggerEn5Segundos, 0);
+    }
+
+
+
     public static void programarNotificaciones(Context context, Reserva reserva) {
         long tiempoReservaMillis = reserva.getFechaInicio()
                 .atZone(ZoneId.systemDefault())
@@ -151,7 +161,7 @@ public class Utils {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        // ✔️ Verificación para Android 12+
+        // Verificación para Android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
                 // Opcional: muestra un mensaje al usuario
@@ -165,7 +175,7 @@ public class Utils {
             }
         }
 
-        // ✔️ Programar la alarma si todo está OK
+        //poner la alarma
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
     }
 
