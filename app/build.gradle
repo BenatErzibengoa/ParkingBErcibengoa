@@ -48,6 +48,7 @@ sonarqube {
         property "sonar.tests", "src/test/java"
         property "sonar.java.binaries", "build/intermediates/javac/debug/classes"
         property "sonar.java.test.binaries", "build/intermediates/javac/debug/classes"
+        property "sonar.java.libraries", "build/intermediates/javac/debug/classes"
     }
 }
 

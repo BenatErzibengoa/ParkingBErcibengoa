@@ -84,9 +84,24 @@ jobs:
           ls -la app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "File not found"
           echo "📊 File content preview:"
           head -5 app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "Cannot read file"
+          echo "🔍 Checking build directory structure:"
+          find app/build -name "*.class" | head -10 || echo "No .class files found"
+          echo "🔍 Checking if build directory exists:"
+          ls -la app/build/ || echo "Build directory not found"
 
       - name: Build project
         run: ./gradlew build
+
+      - name: Verify classes are compiled
+        run: |
+          echo "🔍 Verifying compiled classes exist..."
+          if [ ! -d "app/build/intermediates/javac/debug/classes" ]; then
+            echo "❌ Classes directory not found, trying to compile..."
+            ./gradlew compileDebugJavaWithJavac --info
+          else
+            echo "✅ Classes directory exists"
+            ls -la app/build/intermediates/javac/debug/classes/
+          fi
 
       - name: Build and analyze with Sonar
         env:
