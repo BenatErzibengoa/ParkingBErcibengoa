@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'org.sonarqube'                  // Sonar
 apply plugin: 'com.google.gms.google-services' // Firebase
+apply plugin: 'jacoco'                         // JaCoCo para cobertura
 
 
 android {
@@ -41,6 +42,8 @@ sonarqube {
         property "sonar.projectKey", "BenatErzibengoa_ParkingBErcibengoa"
         property "sonar.organization", "benaterzibengoa"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        property "sonar.java.coveragePlugin", "jacoco"
     }
 }
 
@@ -82,4 +85,41 @@ dependencies {
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
 
+}
+
+// Configuración de JaCoCo para reportes de cobertura
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*'
+    ]
+
+    def debugTree = fileTree(
+        dir: "$buildDir/intermediates/javac/debug/classes",
+        excludes: fileFilter
+    )
+
+    def mainSrc = "$projectDir/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        "jacoco/testDebugUnitTest.exec"
+    ]))
 }
