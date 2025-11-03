@@ -35,10 +35,5 @@ Estas son algunas capturas de pantalla de las funcionalidades principales de la 
 ![Screenshot_20250706_223027](https://github.com/user-attachments/assets/d6560fea-2c06-4dce-8219-a2ad32eac74a)
 
 # Acceso de prueba y configuración
+Esta aplicación guarda los datos en Cloud Firestore. Para que otras personas puedan probar la app, deberán generar su propio google-services.json con su API key de Firebase.
 
-Esta aplicación guarda los datos en **Cloud Firestore**. Para facilitar que otras personas puedan probar la app sin necesidad de realizar configuraciones adicionales, se ha dejado la **API key** incluida en el proyecto.
-
-Además, se proporciona una **cuenta de prueba** para que puedas comprobar el funcionamiento de la sección del historial de reservas:
-
-- **Correo electrónico:** `bengoaerzi@gmail.com`  
-- **Contraseña:** `admin1234`
